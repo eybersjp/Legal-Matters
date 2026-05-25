@@ -1,5 +1,7 @@
 'use client';
 
+export const dynamic = 'force-dynamic';
+
 import { useEffect, useState, useTransition } from 'react';
 import { getClientsList, addClient } from '@/server/actions/client.actions';
 import { Users, Plus, Scale, AlertCircle } from 'lucide-react';

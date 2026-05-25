@@ -1,5 +1,7 @@
 'use client';
 
+export const dynamic = 'force-dynamic';
+
 import { useEffect, useState, useTransition } from 'react';
 import { getTrustRecordsList, getMattersWithClients, recordTrustTransaction } from '@/server/actions/trust.actions';
 import { Landmark, Plus, Scale, AlertCircle, ShieldCheck, BookOpen } from 'lucide-react';

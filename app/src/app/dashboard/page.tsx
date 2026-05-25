@@ -1,5 +1,7 @@
 'use client';
 
+export const dynamic = 'force-dynamic';
+
 import { useEffect, useState } from 'react';
 import { getDashboardStats, getUpcomingDeadlines, getRecentAuditLogs } from '@/server/actions/dashboard.actions';
 import { Scale, Users, FileText, Landmark, Clock, AlertTriangle, ArrowRight, ShieldCheck, Cpu, Terminal, Key } from 'lucide-react';

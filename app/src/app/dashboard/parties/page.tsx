@@ -1,5 +1,7 @@
 'use client';
 
+export const dynamic = 'force-dynamic';
+
 import { useEffect, useState, useTransition } from 'react';
 import { getPartiesList, addParty } from '@/server/actions/party.actions';
 import { ShieldCheck, Plus, AlertTriangle, ShieldAlert, Scale } from 'lucide-react';

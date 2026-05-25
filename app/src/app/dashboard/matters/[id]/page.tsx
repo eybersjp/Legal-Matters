@@ -1,5 +1,7 @@
 'use client';
 
+export const dynamic = 'force-dynamic';
+
 import { useEffect, useState, useTransition } from 'react';
 import { getMatterDetails } from '@/server/actions/matter.actions';
 import { getMatterTimeline, addTimelineEvent } from '@/server/actions/timeline.actions';

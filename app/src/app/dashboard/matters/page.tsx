@@ -1,5 +1,7 @@
 'use client';
 
+export const dynamic = 'force-dynamic';
+
 import { useEffect, useState, useTransition } from 'react';
 import { getMattersList, createMatter } from '@/server/actions/matter.actions';
 import { getClientsList } from '@/server/actions/client.actions';

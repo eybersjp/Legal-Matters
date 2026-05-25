@@ -1,5 +1,7 @@
 'use client';
 
+export const dynamic = 'force-dynamic';
+
 import { useEffect, useState, useTransition } from 'react';
 import { getInvoicesList, generateTaxInvoice } from '@/server/actions/billing.actions';
 import { getMattersForDropdown } from '@/server/actions/deadline.actions';

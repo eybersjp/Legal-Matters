@@ -1,5 +1,7 @@
 'use client';
 
+export const dynamic = 'force-dynamic';
+
 import { useEffect, useState, useTransition } from 'react';
 import { getFirmProfile, updateFirmDetails } from '@/server/actions/firm.actions';
 import { Scale, Users, Award } from 'lucide-react';

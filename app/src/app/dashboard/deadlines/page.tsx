@@ -1,5 +1,7 @@
 'use client';
 
+export const dynamic = 'force-dynamic';
+
 import { useEffect, useState, useTransition } from 'react';
 import { getDeadlinesList, getMattersForDropdown, createCourtDeadline } from '@/server/actions/deadline.actions';
 import { Calendar, Plus, Scale, AlertCircle } from 'lucide-react';

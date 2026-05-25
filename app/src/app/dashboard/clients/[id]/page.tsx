@@ -1,5 +1,7 @@
 'use client';
 
+export const dynamic = 'force-dynamic';
+
 import { useEffect, useState, useTransition } from 'react';
 import { getClientPopiaConsent, updateClientPopiaConsent } from '@/server/actions/popia.actions';
 import { getClientDetails } from '@/server/actions/client.actions';

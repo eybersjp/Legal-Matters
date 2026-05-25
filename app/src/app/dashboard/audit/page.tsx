@@ -1,5 +1,7 @@
 'use client';
 
+export const dynamic = 'force-dynamic';
+
 import { useEffect, useState } from 'react';
 import { getSystemAuditLogs } from '@/server/actions/audit.actions';
 import { History, ShieldAlert, Scale, Search, Eye } from 'lucide-react';

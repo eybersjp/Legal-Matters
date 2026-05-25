@@ -1,5 +1,7 @@
 'use client';
 
+export const dynamic = 'force-dynamic';
+
 import { useEffect, useState, useTransition } from 'react';
 import { getMatterDocuments, registerDocumentUpload, getDocumentDownloadUrl } from '@/server/actions/document.actions';
 import { getMatterDetails } from '@/server/actions/matter.actions';
