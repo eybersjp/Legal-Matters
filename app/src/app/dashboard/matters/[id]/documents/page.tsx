@@ -2,7 +2,7 @@
 
 export const dynamic = 'force-dynamic';
 
-import { useEffect, useState, useTransition } from 'react';
+import { useEffect, useState, useTransition, useCallback } from 'react';
 import { getMatterDocuments, registerDocumentUpload, getDocumentDownloadUrl } from '@/server/actions/document.actions';
 import { getMatterDetails } from '@/server/actions/matter.actions';
 import { FileText, Plus, ShieldCheck, Download, Scale, ShieldAlert, ArrowLeft } from 'lucide-react';
@@ -24,7 +24,7 @@ export default function MatterDocumentsPage({ params }: { params: { id: string }
   const [fileName, setFileName] = useState('');
   const fileSize = 1048576; // mock 1MB
 
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     try {
       const mat = await getMatterDetails(params.id);
       setMatter(mat.matter);
@@ -35,11 +35,12 @@ export default function MatterDocumentsPage({ params }: { params: { id: string }
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [params.id]);
 
   useEffect(() => {
     loadData();
-  }, [params.id]);
+  }, [loadData]);
+
 
   const handleUpload = (e: React.FormEvent) => {
     e.preventDefault();

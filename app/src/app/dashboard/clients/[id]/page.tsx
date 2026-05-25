@@ -2,7 +2,7 @@
 
 export const dynamic = 'force-dynamic';
 
-import { useEffect, useState, useTransition } from 'react';
+import { useEffect, useState, useTransition, useCallback } from 'react';
 import { getClientPopiaConsent, updateClientPopiaConsent } from '@/server/actions/popia.actions';
 import { getClientDetails } from '@/server/actions/client.actions';
 import { ShieldCheck, Mail, Phone, Scale, ShieldAlert, ArrowLeft } from 'lucide-react';
@@ -20,7 +20,7 @@ export default function ClientProfilePage({ params }: { params: { id: string } }
   const [consented, setConsented] = useState(false);
   const [channels, setChannels] = useState<string[]>([]);
 
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     try {
       const c = await getClientDetails(params.id);
       setClient(c);
@@ -36,11 +36,12 @@ export default function ClientProfilePage({ params }: { params: { id: string } }
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [params.id]);
 
   useEffect(() => {
     loadData();
-  }, [params.id]);
+  }, [loadData]);
+
 
   const handleConsentUpdate = (e: React.FormEvent) => {
     e.preventDefault();

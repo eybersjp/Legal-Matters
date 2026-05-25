@@ -2,7 +2,7 @@
 
 export const dynamic = 'force-dynamic';
 
-import { useEffect, useState, useTransition } from 'react';
+import { useEffect, useState, useTransition, useCallback } from 'react';
 import { 
   getPortalMatters, 
   getPortalInvoices, 
@@ -27,7 +27,19 @@ export default function ClientPortalDashboard() {
   const [success, setSuccess] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
-  const loadData = async () => {
+  const fetchDocuments = useCallback(async (matterId: string) => {
+    setIsDocsLoading(true);
+    try {
+      const docs = await getPortalDocuments(matterId);
+      setDocuments(docs);
+    } catch (err: any) {
+      setError(err.message || 'Failed to load case documents.');
+    } finally {
+      setIsDocsLoading(false);
+    }
+  }, []);
+
+  const loadData = useCallback(async () => {
     try {
       const ms = await getPortalMatters();
       setMatters(ms);
@@ -47,23 +59,12 @@ export default function ClientPortalDashboard() {
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const fetchDocuments = async (matterId: string) => {
-    setIsDocsLoading(true);
-    try {
-      const docs = await getPortalDocuments(matterId);
-      setDocuments(docs);
-    } catch (err: any) {
-      setError(err.message || 'Failed to load case documents.');
-    } finally {
-      setIsDocsLoading(false);
-    }
-  };
+  }, [fetchDocuments]);
 
   useEffect(() => {
     loadData();
-  }, []);
+  }, [loadData]);
+
 
   const handleSelectMatter = (matterId: string) => {
     setSelectedMatterId(matterId);

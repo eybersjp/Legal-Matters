@@ -2,7 +2,7 @@
 
 export const dynamic = 'force-dynamic';
 
-import { useEffect, useState, useTransition } from 'react';
+import { useEffect, useState, useTransition, useCallback } from 'react';
 import { getMatterDetails } from '@/server/actions/matter.actions';
 import { getMatterTimeline, addTimelineEvent } from '@/server/actions/timeline.actions';
 import { Scale, Clock, Plus, ArrowLeft, Users, History, ShieldAlert } from 'lucide-react';
@@ -21,7 +21,7 @@ export default function MatterDetailsPage({ params }: { params: { id: string } }
   const [description, setDescription] = useState('');
   const [eventDate, setEventDate] = useState('');
 
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     try {
       const matDetails = await getMatterDetails(params.id);
       setDetails(matDetails);
@@ -32,11 +32,12 @@ export default function MatterDetailsPage({ params }: { params: { id: string } }
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [params.id]);
 
   useEffect(() => {
     loadData();
-  }, [params.id]);
+  }, [loadData]);
+
 
   const handleAddEvent = (e: React.FormEvent) => {
     e.preventDefault();
