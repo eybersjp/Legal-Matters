@@ -3,12 +3,14 @@
 import { useState, useTransition } from 'react';
 import { loginUser } from '@/server/actions/auth.actions';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
+  const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -19,8 +21,8 @@ export default function LoginPage() {
         const res = await loginUser({ email, password });
         if (res) {
           if (res.success && res.redirectTo) {
-            // Force a full-page navigation to ensure session cookies are fully synchronized
-            window.location.href = res.redirectTo;
+            router.refresh();
+            router.replace(res.redirectTo);
           } else if (!res.success) {
             setError(res.error || 'Authentication failed. Please verify your credentials.');
           }
@@ -30,6 +32,7 @@ export default function LoginPage() {
       }
     });
   };
+
 
 
   return (

@@ -3,6 +3,7 @@
 import { useState, useTransition } from 'react';
 import { registerFirm } from '@/server/actions/auth.actions';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 export default function RegisterPage() {
   const [firmName, setFirmName] = useState('');
@@ -13,6 +14,7 @@ export default function RegisterPage() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
+  const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -31,7 +33,8 @@ export default function RegisterPage() {
         });
         if (res) {
           if (res.success && res.redirectTo) {
-            window.location.href = res.redirectTo;
+            router.refresh();
+            router.replace(res.redirectTo);
           } else if (!res.success) {
             setError(res.error || 'Registration failed. LPC Practising Number might already be linked.');
           }
@@ -41,6 +44,7 @@ export default function RegisterPage() {
       }
     });
   };
+
 
 
   return (
