@@ -5,22 +5,30 @@
 
 -- Extract current custom JWT claims
 CREATE OR REPLACE FUNCTION get_auth_firm_id()
-RETURNS UUID AS $$
+RETURNS UUID
+LANGUAGE plpgsql
+SECURITY INVOKER
+SET search_path = public
+AS $$
 BEGIN
     RETURN (auth.jwt() -> 'user_metadata' ->> 'firm_id')::uuid;
 EXCEPTION WHEN OTHERS THEN
     RETURN NULL;
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$;
 
 CREATE OR REPLACE FUNCTION get_auth_role()
-RETURNS VARCHAR AS $$
+RETURNS VARCHAR
+LANGUAGE plpgsql
+SECURITY INVOKER
+SET search_path = public
+AS $$
 BEGIN
     RETURN auth.jwt() -> 'user_metadata' ->> 'role';
 EXCEPTION WHEN OTHERS THEN
     RETURN NULL;
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$;
 
 -- Enable RLS on core tables
 ALTER TABLE firms ENABLE ROW LEVEL SECURITY;
