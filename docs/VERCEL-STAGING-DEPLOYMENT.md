@@ -35,11 +35,37 @@ Under the **Environment Variables** section in Vercel, add the following paramet
 ---
 
 ## 🏗️ Step 3: Project Configuration Settings
-Since the `app/` folder is nested in our repository directory structure:
-1. **Root Directory**: Select `app`.
-2. **Framework Preset**: Select **Next.js**.
+
+Since the `app/` folder is nested in our repository, the project includes a `vercel.json` at the repo root that **automatically** configures the build settings:
+
+```json
+{
+  "framework": "nextjs",
+  "buildCommand": "npm run build",
+  "devCommand": "npm run dev",
+  "installCommand": "npm ci",
+  "outputDirectory": ".next",
+  "rootDirectory": "app"
+}
+```
+
+If configuring manually via the Vercel dashboard:
+1. **Root Directory**: Set to `app` (not the repo root)
+2. **Framework Preset**: Select **Next.js**
 3. **Build Command**: `npm run build`
 4. **Install Command**: `npm ci`
+
+> [!CAUTION]
+> **NEVER set `NODE_ENV` manually in Vercel environment variables.**
+> 
+> Vercel automatically sets `NODE_ENV=production` for all production and preview deployments.
+> Setting it manually to any other value (e.g. `staging`, `development`) causes the build to fail with:
+> - `Error: <Html> should not be imported outside of pages/_document`  
+> - `TypeError: Cannot read properties of null (reading 'useContext')`
+>
+> If you need to differentiate staging from production, use `NEXT_PUBLIC_APP_ENV=staging` instead.
+>
+> **If `NODE_ENV` appears in your Vercel Environment Variables settings — remove it immediately.**
 
 ---
 
