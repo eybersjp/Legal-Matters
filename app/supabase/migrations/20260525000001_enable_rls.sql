@@ -154,3 +154,49 @@ USING (firm_id = get_auth_firm_id() AND get_auth_role() = 'Partner');
 
 CREATE POLICY insert_trust ON trust_account_records FOR INSERT
 WITH CHECK (firm_id = get_auth_firm_id() AND get_auth_role() = 'Partner');
+
+-- 9. MULTITENANT ISOLATION POLICIES FOR SECURING OTHER CORE TABLES
+-- These guarantee absolute multitenant data isolation scoped by firm_id
+
+CREATE POLICY all_parties ON parties FOR ALL
+USING (firm_id = get_auth_firm_id());
+
+CREATE POLICY all_matter_parties ON matter_parties FOR ALL
+USING (firm_id = get_auth_firm_id());
+
+CREATE POLICY all_matter_team ON matter_team_members FOR ALL
+USING (firm_id = get_auth_firm_id());
+
+CREATE POLICY all_matter_events ON matter_events FOR ALL
+USING (firm_id = get_auth_firm_id());
+
+CREATE POLICY all_matter_tasks ON matter_tasks FOR ALL
+USING (firm_id = get_auth_firm_id());
+
+CREATE POLICY all_matter_deadlines ON matter_deadlines FOR ALL
+USING (firm_id = get_auth_firm_id());
+
+CREATE POLICY all_doc_versions ON document_versions FOR ALL
+USING (firm_id = get_auth_firm_id());
+
+CREATE POLICY all_doc_logs ON document_access_logs FOR ALL
+USING (firm_id = get_auth_firm_id());
+
+CREATE POLICY all_popia_consents ON popia_consents FOR ALL
+USING (firm_id = get_auth_firm_id());
+
+CREATE POLICY all_portal_access ON client_portal_access FOR ALL
+USING (firm_id = get_auth_firm_id());
+
+CREATE POLICY all_time_entries ON time_entries FOR ALL
+USING (firm_id = get_auth_firm_id());
+
+CREATE POLICY all_invoices ON invoices FOR ALL
+USING (firm_id = get_auth_firm_id());
+
+CREATE POLICY all_invoice_lines ON invoice_line_items FOR ALL
+USING (firm_id = get_auth_firm_id());
+
+CREATE POLICY all_notifications ON notifications FOR ALL
+USING (firm_id = get_auth_firm_id());
+
