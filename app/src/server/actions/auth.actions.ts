@@ -21,26 +21,31 @@ export async function loginUser(formData: any) {
     return { success: false, error: error.message };
   }
 
-  // Record Auth Audit Log
-  const adminDb = createAdminClient();
-  await adminDb.from('audit_logs').insert({
-    firm_id: data.user?.user_metadata?.firm_id,
-    user_id: data.user?.id,
-    action: 'USER_LOGIN',
-    resource_type: 'user',
-    resource_id: data.user?.id,
-    changes: { email: parsed.data.email },
-  });
+  // Record Auth Audit Log - wrapped in try-catch so logging failures don't block critical login path
+  try {
+    const adminDb = createAdminClient();
+    if (adminDb) {
+      await adminDb.from('audit_logs').insert({
+        firm_id: data.user?.user_metadata?.firm_id,
+        user_id: data.user?.id,
+        action: 'USER_LOGIN',
+        resource_type: 'user',
+        resource_id: data.user?.id,
+        changes: { email: parsed.data.email },
+      });
+    }
+  } catch (auditError) {
+    console.error('Failed to record login audit log:', auditError);
+  }
 
   revalidatePath('/dashboard', 'layout');
   revalidatePath('/portal', 'layout');
   
   const role = data.user?.user_metadata?.role;
-  if (role === 'Client') {
-    redirect('/portal');
-  } else {
-    redirect('/dashboard');
-  }
+  const redirectTo = role === 'Client' ? '/portal' : '/dashboard';
+
+  return { success: true, redirectTo };
+
 }
 
 export async function registerFirm(formData: any) {
@@ -111,7 +116,7 @@ export async function registerFirm(formData: any) {
     changes: { firm_name: firmName, admin_email: email },
   });
 
-  redirect('/login?registered=true');
+  return { success: true, redirectTo: '/login?registered=true' };
 }
 
 export async function logoutUser() {

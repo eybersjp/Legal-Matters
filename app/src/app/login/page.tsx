@@ -15,12 +15,22 @@ export default function LoginPage() {
     setError(null);
 
     startTransition(async () => {
-      const res = await loginUser({ email, password });
-      if (res && !res.success) {
-        setError(res.error || 'Authentication failed. Please verify your credentials.');
+      try {
+        const res = await loginUser({ email, password });
+        if (res) {
+          if (res.success && res.redirectTo) {
+            // Force a full-page navigation to ensure session cookies are fully synchronized
+            window.location.href = res.redirectTo;
+          } else if (!res.success) {
+            setError(res.error || 'Authentication failed. Please verify your credentials.');
+          }
+        }
+      } catch (err: any) {
+        setError(err.message || 'An unexpected error occurred during sign in.');
       }
     });
   };
+
 
   return (
     <div className="min-h-screen bg-slate-900 text-white flex items-center justify-center px-4 relative overflow-hidden">

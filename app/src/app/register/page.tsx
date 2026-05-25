@@ -19,20 +19,29 @@ export default function RegisterPage() {
     setError(null);
 
     startTransition(async () => {
-      const res = await registerFirm({
-        email,
-        password,
-        firstName,
-        lastName,
-        firmName,
-        lpcNumber,
-        role: 'Partner',
-      });
-      if (res && !res.success) {
-        setError(res.error || 'Registration failed. LPC Practising Number might already be linked.');
+      try {
+        const res = await registerFirm({
+          email,
+          password,
+          firstName,
+          lastName,
+          firmName,
+          lpcNumber,
+          role: 'Partner',
+        });
+        if (res) {
+          if (res.success && res.redirectTo) {
+            window.location.href = res.redirectTo;
+          } else if (!res.success) {
+            setError(res.error || 'Registration failed. LPC Practising Number might already be linked.');
+          }
+        }
+      } catch (err: any) {
+        setError(err.message || 'An unexpected error occurred during registration.');
       }
     });
   };
+
 
   return (
     <div className="min-h-screen bg-slate-900 text-white flex items-center justify-center py-12 px-4 relative overflow-hidden">
