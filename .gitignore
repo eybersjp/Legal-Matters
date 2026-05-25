@@ -1,0 +1,30 @@
+# Dependencies
+node_modules/
+app/node_modules/
+
+# Next.js Build Output
+.next/
+app/.next/
+app/tsconfig.tsbuildinfo
+
+# Local Environment Variables
+.env
+.env.local
+.env.*.local
+app/.env
+app/.env.local
+app/.env.*.local
+
+# Testing and Playwright outputs
+test-results/
+playwright-report/
+blob-report/
+playwright/.cache/
+app/test-results/
+app/playwright-report/
+app/blob-report/
+app/playwright/.cache/
+
+# OS files
+.DS_Store
+Thumbs.db

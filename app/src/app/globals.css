@@ -1,0 +1,144 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 210 20% 98%;
+    --foreground: 222 47% 11%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 11%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 47% 11%;
+
+    --primary: 221 45% 18%;
+    --primary-foreground: 210 20% 98%;
+
+    --secondary: 43 70% 38%;
+    --secondary-foreground: 210 20% 98%;
+
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+
+    --accent: 43 70% 95%;
+    --accent-foreground: 43 70% 20%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 20% 98%;
+
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 221 45% 18%;
+
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    --background: 222 47% 8%;
+    --foreground: 210 20% 98%;
+    --card: 222 47% 10%;
+    --card-foreground: 210 20% 98%;
+    --popover: 222 47% 9%;
+    --popover-foreground: 210 20% 98%;
+    --primary: 210 20% 98%;
+    --primary-foreground: 222 47% 11%;
+    --secondary: 43 70% 50%;
+    --secondary-foreground: 222 47% 8%;
+    --muted: 222 47% 15%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 222 47% 12%;
+    --accent-foreground: 210 20% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 20% 98%;
+    --border: 222 47% 16%;
+    --input: 222 47% 16%;
+    --ring: 212.7 26.8% 83.9%;
+  }
+}
+
+@layer base {
+  * { @apply border-border; }
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+}
+
+/* ─── Scrollbar ─── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: hsl(var(--muted-foreground) / 0.2); border-radius: 9999px; }
+::-webkit-scrollbar-thumb:hover { background: hsl(var(--muted-foreground) / 0.4); }
+
+/* ══════════════════════════════════════════════════════════
+   Landing page — Material Symbols
+══════════════════════════════════════════════════════════ */
+.material-symbols-outlined {
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+  font-family: 'Material Symbols Outlined';
+}
+.fill-icon {
+  font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
+
+/* ─── Shadows ─── */
+.airy-shadow    { box-shadow: 0px 4px 12px rgba(20, 33, 61, 0.04); }
+.airy-shadow-lg { box-shadow: 0px 12px 32px rgba(20, 33, 61, 0.08); }
+
+/* ─── Bronze gradient button ─── */
+.bronze-gradient { background: linear-gradient(180deg, #D6B56D 0%, #8C6A3F 100%); }
+
+/* ─── Animated mesh background ─── */
+.mesh-gradient {
+  background: linear-gradient(135deg, #14213d 0%, #1e2e4f 25%, #14213d 50%, #2a1b0a 75%, #14213d 100%);
+  background-size: 400% 400%;
+  animation: meshMove 20s ease infinite;
+}
+@keyframes meshMove {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* ─── Floating 3-D shapes ─── */
+.floating-shape {
+  position: absolute;
+  transform-style: preserve-3d;
+  opacity: 0.15;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  pointer-events: none;
+  border-radius: 12px;
+}
+.shape-1 { width: 300px; height: 400px; top: 10%;  left: -5%; animation: float3D 25s infinite linear; }
+.shape-2 { width: 200px; height: 300px; bottom: 10%; right: 5%; animation: float3D 30s infinite linear reverse; }
+.shape-3 { width: 150px; height: 200px; top: 40%;  left: 60%; animation: float3D 20s infinite linear; }
+
+@keyframes float3D {
+  0%   { transform: translate3d(0, 0, 0) rotateX(0deg)   rotateY(0deg)  rotateZ(0deg); }
+  50%  { transform: translate3d(50px, -50px, 100px) rotateX(180deg) rotateY(45deg) rotateZ(20deg); }
+  100% { transform: translate3d(0, 0, 0) rotateX(360deg) rotateY(0deg)  rotateZ(0deg); }
+}
+
+/* ─── Rising particles ─── */
+.particle {
+  position: absolute;
+  background: white;
+  border-radius: 50%;
+  opacity: 0.3;
+  pointer-events: none;
+  filter: blur(1px);
+}
+@keyframes particleUp {
+  0%   { transform: translateY(0);      opacity: 0; }
+  50%  { opacity: 0.5; }
+  100% { transform: translateY(-200px); opacity: 0; }
+}
+
+/* ─── Respect reduced-motion ─── */
+@media (prefers-reduced-motion: reduce) {
+  .mesh-gradient,
+  .floating-shape,
+  .particle { animation: none !important; }
+}

@@ -1,0 +1,5 @@
+-- ==========================================
+-- POPIA 2013 AUDIT TRIGGERS CONFIGURATION
+-- Note: PostgreSQL does not support standard SELECT triggers on tables.
+-- PII read accesses are audited directly in the application-layer Server Actions.
+-- ==========================================

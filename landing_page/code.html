@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+
+<html class="scroll-smooth" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Legal Matters | The Operating System for SA Legal Practice</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-secondary-fixed": "#2a1700",
+                        "on-secondary-container": "#795930",
+                        "surface-variant": "#e6e2d9",
+                        "tertiary-container": "#2d2000",
+                        "secondary": "#78582f",
+                        "primary": "#000a24",
+                        "on-error": "#ffffff",
+                        "surface-container-lowest": "#ffffff",
+                        "card": "#FFFFFF",
+                        "on-surface": "#1c1c16",
+                        "surface-dark": "#0B1020",
+                        "outline": "#75777e",
+                        "on-primary": "#ffffff",
+                        "secondary-fixed": "#ffddb7",
+                        "on-secondary-fixed-variant": "#5e411a",
+                        "primary-fixed": "#d9e2ff",
+                        "on-primary-container": "#7c89aa",
+                        "on-tertiary-container": "#a38543",
+                        "on-background": "#1c1c16",
+                        "on-error-container": "#93000a",
+                        "warning": "#B45309",
+                        "tertiary": "#120a00",
+                        "surface-container-low": "#f7f3ea",
+                        "tertiary-fixed-dim": "#e4c279",
+                        "surface-dim": "#dddad1",
+                        "on-tertiary-fixed": "#251a00",
+                        "inverse-primary": "#b9c6ea",
+                        "primary-container": "#14213d",
+                        "surface": "#fdf9f0",
+                        "surface-container-highest": "#e6e2d9",
+                        "border-warm": "#E5E0D6",
+                        "surface-bright": "#fdf9f0",
+                        "inverse-on-surface": "#f4f0e7",
+                        "text-muted": "#6B7280",
+                        "inverse-surface": "#31302b",
+                        "background": "#fdf9f0",
+                        "text-primary": "#111827",
+                        "on-primary-fixed": "#0d1b36",
+                        "on-primary-fixed-variant": "#3a4664",
+                        "surface-container-high": "#ece8df",
+                        "surface-container": "#f1eee5",
+                        "tertiary-fixed": "#ffdf9c",
+                        "error-container": "#ffdad6",
+                        "on-tertiary-fixed-variant": "#5a4304",
+                        "on-surface-variant": "#45464d",
+                        "primary-fixed-dim": "#b9c6ea",
+                        "surface-tint": "#525e7d",
+                        "on-tertiary": "#ffffff",
+                        "secondary-fixed-dim": "#e9bf8d",
+                        "outline-variant": "#c5c6ce",
+                        "secondary-container": "#fed39f",
+                        "error": "#B91C1C",
+                        "on-secondary": "#ffffff",
+                        "success": "#166534"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "base": "8px",
+                        "margin-mobile": "20px",
+                        "max-width": "1440px",
+                        "margin-desktop": "48px",
+                        "gutter": "24px"
+                    },
+                    "fontFamily": {
+                        "headline-xl": ["Inter"],
+                        "body-sm": ["Inter"],
+                        "headline-lg": ["Inter"],
+                        "headline-lg-mobile": ["Inter"],
+                        "headline-sm": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "label-md": ["Inter"],
+                        "body-md": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "label-sm": ["Inter"]
+                    },
+                    "fontSize": {
+                        "headline-xl": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "600" }],
+                        "body-sm": ["14px", { "lineHeight": "20px", "letterSpacing": "0em", "fontWeight": "400" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "headline-lg-mobile": ["28px", { "lineHeight": "36px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "headline-sm": ["20px", { "lineHeight": "28px", "letterSpacing": "0em", "fontWeight": "500" }],
+                        "headline-md": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "500" }],
+                        "label-md": ["13px", { "lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "letterSpacing": "0em", "fontWeight": "400" }],
+                        "body-lg": ["18px", { "lineHeight": "28px", "letterSpacing": "0em", "fontWeight": "400" }],
+                        "label-sm": ["11px", { "lineHeight": "14px", "letterSpacing": "0.02em", "fontWeight": "500" }]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .hero-gradient {
+            background: #14213d;
+            background: radial-gradient(circle at top right, rgba(120, 88, 47, 0.15) 0%, rgba(20, 33, 61, 1) 70%);
+        }
+        .airy-shadow {
+            box-shadow: 0px 4px 12px rgba(20, 33, 61, 0.04);
+        }
+        .airy-shadow-lg {
+            box-shadow: 0px 12px 32px rgba(20, 33, 61, 0.08);
+        }
+        .bronze-gradient {
+            background: linear-gradient(180deg, #D6B56D 0%, #8C6A3F 100%);
+        }
+
+        /* 3D Animated Background Styles */
+        .hero-bg-container {
+            perspective: 1200px;
+            overflow: hidden;
+            background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDivxD4qNAbg5wSfWQthZu_mIVVlhHYtpjHhU_UM5n6l2I3MOzVXKwxGW3S-Po-J7e0pY6aOKZhG7rYsWDqetWMGleBewfxfVtDraHL2c2EDK5ToqKHEVEvMqrtiTL_Uq0KyjYITjReTQjUhDlOUheG9x9Vvpvd_lTR7SCncrHeCCiaflCICt7hE1Ozxru3dlIKZWHU2v1YRZgUp2wSv_yn0v8Q3WJc0U9WIPPYD7SVCNjwn2kKVyrbY8LW44x0xKw6sb0QQmAgnMw');
+            background-size: cover;
+            background-position: center;
+        }
+        .mesh-gradient {
+            background: linear-gradient(135deg, #14213d 0%, #1e2e4f 25%, #14213d 50%, #2a1b0a 75%, #14213d 100%);
+            background-size: 400% 400%;
+            animation: meshMove 20s ease infinite;
+        }
+        @keyframes meshMove {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .floating-shape {
+            position: absolute;
+            transform-style: preserve-3d;
+            opacity: 0.15;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            pointer-events: none;
+        }
+        .shape-1 {
+            width: 300px; height: 400px;
+            top: 10%; left: -5%;
+            animation: float3D 25s infinite linear;
+        }
+        .shape-2 {
+            width: 200px; height: 300px;
+            bottom: 10%; right: 5%;
+            animation: float3D 30s infinite linear reverse;
+        }
+        .shape-3 {
+            width: 150px; height: 200px;
+            top: 40%; left: 60%;
+            animation: float3D 20s infinite linear;
+        }
+
+        @keyframes float3D {
+            0% { transform: translate3d(0, 0, 0) rotateX(0deg) rotateY(0deg) rotateZ(0deg); }
+            50% { transform: translate3d(50px, -50px, 100px) rotateX(180deg) rotateY(45deg) rotateZ(20deg); }
+            100% { transform: translate3d(0, 0, 0) rotateX(360deg) rotateY(0deg) rotateZ(0deg); }
+        }
+
+        .particle {
+            position: absolute;
+            background: white;
+            border-radius: 50%;
+            opacity: 0.3;
+            pointer-events: none;
+            filter: blur(1px);
+        }
+        @keyframes particleUp {
+            0% { transform: translateY(0); opacity: 0; }
+            50% { opacity: 0.5; }
+            100% { transform: translateY(-200px); opacity: 0; }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .mesh-gradient, .floating-shape, .particle-layer div {
+                animation: none !important;
+            }
+        }
+    </style>
+</head>
+<body class="bg-background font-body-md text-on-surface">
+<!-- TopNavBar -->
+<nav class="fixed top-0 w-full z-50 bg-surface/80 backdrop-blur-md border-b border-warm/50 shadow-sm transition-all duration-300 ease-in-out">
+<div class="flex justify-between items-center h-20 px-margin-desktop max-w-max-width mx-auto">
+<div class="flex items-center"><img alt="Legal Matters Logo" class="h-10 w-auto object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAKaUmn_T7x2Y9DaWLwSz26L8VZ4mkmS73HivCWLB6kzH0yICHxKzWcl6aosl_A8eaAputPLmNA2cQGkwlMpR9ie1fNcaxc79Hq2bR5cNHKyltm0K3Lq_e87xGR1WR4Nn6xoamilBkmdreApDMbvKogMWNtjvcNOZAt2rnzjuC_G5C9INKN_dle-ymmM59PvWqZBVcJk1-YMB26FctrDKf_J5B_9Fs3ExAL_fhHWyaTgX4Uv0vyCTXzXHzd4yqiFl-gCzj5okfpAgQ"/></div>
+<div class="hidden md:flex items-center gap-8">
+<a class="font-label-md text-label-md text-on-surface-variant hover:text-secondary transition-colors" href="#">Product</a>
+<a class="font-label-md text-label-md text-on-surface-variant hover:text-secondary transition-colors" href="#">Solutions</a>
+<a class="font-label-md text-label-md text-on-surface-variant hover:text-secondary transition-colors" href="#">Security</a>
+<a class="font-label-md text-label-md text-on-surface-variant hover:text-secondary transition-colors" href="#">Pricing</a>
+<a class="font-label-md text-label-md text-on-surface-variant hover:text-secondary transition-colors" href="#">Resources</a>
+</div>
+<div class="flex items-center gap-4">
+<button class="hidden md:block font-label-md text-label-md text-primary px-6 py-2 hover:bg-surface-container transition-colors">Login</button>
+<button class="bg-primary text-on-primary font-label-md text-label-md px-6 py-3 rounded-lg hover:opacity-90 transition-opacity airy-shadow">Book a Demo</button>
+</div>
+</div>
+</nav>
+<!-- Hero Section -->
+<header class="relative pt-32 pb-20 md:pt-48 md:pb-40 hero-bg-container text-white overflow-hidden bg-primary">
+<!-- Overlay Layer -->
+<div class="absolute inset-0 z-0 bg-primary/70 pointer-events-none"></div>
+<!-- 3D Animated Background Layer -->
+<div class="absolute inset-0 z-0">
+<div class="mesh-gradient absolute inset-0 opacity-40"></div>
+<!-- Floating 3D Shapes -->
+<div class="floating-shape shape-1 rounded-xl"></div>
+<div class="floating-shape shape-2 rounded-lg"></div>
+<div class="floating-shape shape-3 rounded-md"></div>
+<!-- Particles -->
+<div class="absolute inset-0 overflow-hidden pointer-events-none opacity-40">
+<div class="particle w-1 h-1" style="top: 80%; left: 10%; animation: particleUp 8s infinite ease-out;"></div>
+<div class="particle w-1.5 h-1.5" style="top: 70%; left: 30%; animation: particleUp 12s infinite ease-out 2s;"></div>
+<div class="particle w-1 h-1" style="top: 90%; left: 50%; animation: particleUp 10s infinite ease-out 4s;"></div>
+<div class="particle w-2 h-2" style="top: 85%; left: 70%; animation: particleUp 15s infinite ease-out 1s;"></div>
+<div class="particle w-1 h-1" style="top: 75%; left: 90%; animation: particleUp 9s infinite ease-out 5s;"></div>
+<div class="particle w-1 h-1" style="top: 60%; left: 15%; animation: particleUp 11s infinite ease-out 3s;"></div>
+<div class="particle w-1.5 h-1.5" style="top: 95%; left: 80%; animation: particleUp 14s infinite ease-out 6s;"></div>
+</div>
+<!-- Original subtle gradient overlay -->
+<div class="absolute inset-0 bg-gradient-to-tr from-transparent to-black/20"></div>
+</div>
+<div class="relative z-10 max-w-max-width mx-auto px-margin-desktop grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+<div class="lg:col-span-6 space-y-8">
+<h1 class="font-headline-xl text-headline-xl text-white">The operating system for South African legal practice.</h1>
+<p class="font-body-lg text-body-lg text-primary-fixed/90 max-w-xl">
+                    Manage matters, clients, documents, deadlines, POPIA consent, audit trails, and legal workflows from one secure platform.
+                </p>
+<div class="flex flex-col sm:flex-row gap-4">
+<button class="bronze-gradient text-white font-label-md text-label-md px-8 py-4 rounded-lg hover:brightness-110 transition-all airy-shadow-lg">Book a Demo</button>
+<button class="border border-primary-fixed/40 text-white font-label-md text-label-md px-8 py-4 rounded-lg hover:bg-white/10 transition-all backdrop-blur-sm">Explore the Platform</button>
+</div>
+</div>
+<!-- UI Mockup -->
+<div class="lg:col-span-6 relative">
+<div class="bg-surface-container-low rounded-xl airy-shadow-lg border border-white/10 p-4 md:p-6 text-on-surface">
+<!-- Dashboard Header -->
+<div class="flex justify-between items-center mb-6 border-b border-warm pb-4">
+<div class="flex gap-2 items-center">
+<span class="material-symbols-outlined text-secondary">dashboard</span>
+<span class="font-label-md text-label-md uppercase tracking-wider opacity-60">Firm Dashboard</span>
+</div>
+<div class="flex gap-4">
+<div class="w-3 h-3 rounded-full bg-success"></div>
+<div class="w-3 h-3 rounded-full bg-warning"></div>
+<div class="w-3 h-3 rounded-full bg-error"></div>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-4">
+<!-- Active Matters -->
+<div class="col-span-1 bg-white p-4 rounded-lg airy-shadow border border-warm">
+<div class="flex justify-between items-start mb-2">
+<span class="font-label-sm text-label-sm text-text-muted">Active Matters</span>
+<span class="material-symbols-outlined text-primary text-sm">folder_open</span>
+</div>
+<div class="text-3xl font-bold text-primary">124</div>
+<div class="text-[10px] text-success font-semibold mt-1 flex items-center gap-1">
+<span class="material-symbols-outlined text-xs">trending_up</span> +8% from last month
+                            </div>
+</div>
+<!-- Upcoming Deadlines -->
+<div class="col-span-1 bg-white p-4 rounded-lg airy-shadow border border-warm">
+<div class="flex justify-between items-start mb-2">
+<span class="font-label-sm text-label-sm text-text-muted">Upcoming</span>
+<span class="material-symbols-outlined text-error text-sm">event</span>
+</div>
+<div class="text-3xl font-bold text-primary">03</div>
+<div class="text-[10px] text-error font-semibold mt-1">Due within 48 hours</div>
+</div>
+<!-- Document Vault -->
+<div class="col-span-2 bg-white p-4 rounded-lg airy-shadow border border-warm">
+<div class="flex justify-between items-center mb-4">
+<span class="font-label-md text-label-md font-bold">Document Vault</span>
+<span class="text-[10px] px-2 py-1 bg-primary-fixed text-primary rounded">Encrypted</span>
+</div>
+<div class="space-y-2">
+<div class="flex justify-between items-center p-2 hover:bg-surface-container rounded transition-colors cursor-pointer">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-secondary">description</span>
+<span class="text-xs font-medium">Matter_Ref_2024_01.pdf</span>
+</div>
+<span class="text-[10px] text-text-muted">2 mins ago</span>
+</div>
+<div class="flex justify-between items-center p-2 hover:bg-surface-container rounded transition-colors cursor-pointer">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-secondary">description</span>
+<span class="text-xs font-medium">POPIA_Consent_Smith.docx</span>
+</div>
+<span class="text-[10px] text-text-muted">1 hour ago</span>
+</div>
+</div>
+</div>
+<!-- POPIA & Audit -->
+<div class="col-span-2 grid grid-cols-2 gap-4">
+<div class="p-3 rounded-lg border border-warm bg-surface-container-highest/30">
+<div class="text-[10px] uppercase font-bold text-text-muted mb-1">POPIA Status</div>
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-success"></span>
+<span class="text-xs font-semibold">98% Compliant</span>
+</div>
+</div>
+<div class="p-3 rounded-lg border border-warm bg-surface-container-highest/30">
+<div class="text-[10px] uppercase font-bold text-text-muted mb-1">Audit Activity</div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-xs text-primary">verified_user</span>
+<span class="text-xs font-semibold">Live Logging</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Decorative elements -->
+<div class="absolute -top-6 -right-6 w-24 h-24 bronze-gradient opacity-10 rounded-full blur-3xl"></div>
+<div class="absolute -bottom-10 -left-10 w-40 h-40 bg-primary-fixed-dim opacity-5 rounded-full blur-3xl"></div>
+</div>
+</div>
+</header>
+<!-- Trust Bar -->
+<div class="bg-primary-container py-8 border-y border-white/5">
+<div class="max-w-max-width mx-auto px-margin-desktop">
+<div class="grid grid-cols-2 md:grid-cols-4 gap-8">
+<div class="flex flex-col items-center text-center gap-2">
+<span class="material-symbols-outlined text-on-secondary-container">shield_with_house</span>
+<span class="font-label-sm text-label-sm text-primary-fixed">Built for South African legal workflows</span>
+</div>
+<div class="flex flex-col items-center text-center gap-2">
+<span class="material-symbols-outlined text-on-secondary-container">policy</span>
+<span class="font-label-sm text-label-sm text-primary-fixed">Designed for POPIA-conscious operations</span>
+</div>
+<div class="flex flex-col items-center text-center gap-2">
+<span class="material-symbols-outlined text-on-secondary-container">lock_open</span>
+<span class="font-label-sm text-label-sm text-primary-fixed">Matter-level access control</span>
+</div>
+<div class="flex flex-col items-center text-center gap-2">
+<span class="material-symbols-outlined text-on-secondary-container">history</span>
+<span class="font-label-sm text-label-sm text-primary-fixed">Audit-ready activity history</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Product Operating System (Feature Grid) -->
+<section class="py-24 px-margin-desktop max-w-max-width mx-auto">
+<div class="text-center mb-16">
+<h2 class="font-headline-lg text-headline-lg text-primary mb-4">One connected workspace for the work that matters.</h2>
+<p class="font-body-md text-body-md text-on-surface-variant max-w-2xl mx-auto">Modernize your firm with a single source of truth for every case, document, and client interaction.</p>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+<!-- Matter Management -->
+<div class="bg-card p-8 rounded-xl border border-border-warm airy-shadow hover:-translate-y-1 transition-all">
+<span class="material-symbols-outlined text-secondary text-3xl mb-6">folder_managed</span>
+<h3 class="font-headline-sm text-headline-sm mb-2 text-primary">Matter Management</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Centralized hub for case files, pleadings, and internal notes.</p>
+</div>
+<!-- Client Records -->
+<div class="bg-card p-8 rounded-xl border border-border-warm airy-shadow hover:-translate-y-1 transition-all">
+<span class="material-symbols-outlined text-secondary text-3xl mb-6">contacts</span>
+<h3 class="font-headline-sm text-headline-sm mb-2 text-primary">Client Records</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">KYC, onboarding status, and secure contact histories.</p>
+</div>
+<!-- Document Vault -->
+<div class="bg-card p-8 rounded-xl border border-border-warm airy-shadow hover:-translate-y-1 transition-all">
+<span class="material-symbols-outlined text-secondary text-3xl mb-6">encrypted</span>
+<h3 class="font-headline-sm text-headline-sm mb-2 text-primary">Document Vault</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Bank-grade encryption for sensitive legal documents.</p>
+</div>
+<!-- Deadlines -->
+<div class="bg-card p-8 rounded-xl border border-border-warm airy-shadow hover:-translate-y-1 transition-all">
+<span class="material-symbols-outlined text-secondary text-3xl mb-6">notifications_active</span>
+<h3 class="font-headline-sm text-headline-sm mb-2 text-primary">Deadlines</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Automated court calendars and prescription alerts.</p>
+</div>
+<!-- POPIA Consent -->
+<div class="bg-card p-8 rounded-xl border border-border-warm airy-shadow hover:-translate-y-1 transition-all">
+<span class="material-symbols-outlined text-secondary text-3xl mb-6">gavel</span>
+<h3 class="font-headline-sm text-headline-sm mb-2 text-primary">POPIA Consent</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Built-in processing consent management and tracking.</p>
+</div>
+<!-- Audit Logs -->
+<div class="bg-card p-8 rounded-xl border border-border-warm airy-shadow hover:-translate-y-1 transition-all">
+<span class="material-symbols-outlined text-secondary text-3xl mb-6">rule</span>
+<h3 class="font-headline-sm text-headline-sm mb-2 text-primary">Audit Logs</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Detailed trail of who accessed what and when.</p>
+</div>
+<!-- Client Portal -->
+<div class="bg-card p-8 rounded-xl border border-border-warm airy-shadow hover:-translate-y-1 transition-all">
+<span class="material-symbols-outlined text-secondary text-3xl mb-6">door_front</span>
+<h3 class="font-headline-sm text-headline-sm mb-2 text-primary">Client Portal</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Branded space for clients to upload documents safely.</p>
+</div>
+<!-- Billing Readiness -->
+<div class="bg-card p-8 rounded-xl border border-border-warm airy-shadow hover:-translate-y-1 transition-all">
+<span class="material-symbols-outlined text-secondary text-3xl mb-6">payments</span>
+<h3 class="font-headline-sm text-headline-sm mb-2 text-primary">Billing Readiness</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Capture billable time directly within matter workflows.</p>
+</div>
+</div>
+</section>
+<!-- Workflow Section -->
+<section class="bg-surface-container-low py-24">
+<div class="max-w-max-width mx-auto px-margin-desktop">
+<h2 class="font-headline-lg text-headline-lg text-primary text-center mb-20">Seamless Lifecycle Management</h2>
+<div class="relative">
+<!-- Connector Line -->
+<div class="hidden lg:block absolute top-12 left-0 w-full h-0.5 bg-border-warm"></div>
+<div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-8 relative z-10">
+<!-- Steps -->
+<div class="flex flex-col items-center text-center">
+<div class="w-12 h-12 bg-primary text-white rounded-full flex items-center justify-center font-bold mb-4 airy-shadow">1</div>
+<span class="font-label-md text-label-md text-primary">Intake</span>
+</div>
+<div class="flex flex-col items-center text-center">
+<div class="w-12 h-12 bg-white border-2 border-primary text-primary rounded-full flex items-center justify-center font-bold mb-4 airy-shadow">2</div>
+<span class="font-label-md text-label-md text-primary">Conflicts</span>
+</div>
+<div class="flex flex-col items-center text-center">
+<div class="w-12 h-12 bg-white border-2 border-primary text-primary rounded-full flex items-center justify-center font-bold mb-4 airy-shadow">3</div>
+<span class="font-label-md text-label-md text-primary">POPIA</span>
+</div>
+<div class="flex flex-col items-center text-center">
+<div class="w-12 h-12 bg-white border-2 border-primary text-primary rounded-full flex items-center justify-center font-bold mb-4 airy-shadow">4</div>
+<span class="font-label-md text-label-md text-primary">Opening</span>
+</div>
+<div class="flex flex-col items-center text-center">
+<div class="w-12 h-12 bg-white border-2 border-primary text-primary rounded-full flex items-center justify-center font-bold mb-4 airy-shadow">5</div>
+<span class="font-label-md text-label-md text-primary">Action</span>
+</div>
+<div class="flex flex-col items-center text-center">
+<div class="w-12 h-12 bg-white border-2 border-primary text-primary rounded-full flex items-center justify-center font-bold mb-4 airy-shadow">6</div>
+<span class="font-label-md text-label-md text-primary">Filing</span>
+</div>
+<div class="flex flex-col items-center text-center">
+<div class="w-12 h-12 bg-white border-2 border-primary text-primary rounded-full flex items-center justify-center font-bold mb-4 airy-shadow">7</div>
+<span class="font-label-md text-label-md text-primary">Billing</span>
+</div>
+<div class="flex flex-col items-center text-center">
+<div class="w-12 h-12 bg-white border-2 border-primary text-primary rounded-full flex items-center justify-center font-bold mb-4 airy-shadow">8</div>
+<span class="font-label-md text-label-md text-primary">Audit</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Solutions Section -->
+<section class="py-24 px-margin-desktop max-w-max-width mx-auto">
+<h2 class="font-headline-lg text-headline-lg text-primary text-center mb-16">Designed for your practice area.</h2>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-gutter">
+<!-- Solo -->
+<div class="group cursor-pointer">
+<div class="bg-card border border-border-warm rounded-xl p-8 h-full transition-all group-hover:border-secondary group-hover:airy-shadow-lg">
+<h4 class="font-headline-sm text-headline-sm text-primary mb-2">Solo Attorneys</h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Stay organized and professional without the overhead of a large IT team.</p>
+</div>
+</div>
+<!-- Boutique -->
+<div class="group cursor-pointer">
+<div class="bg-card border border-border-warm rounded-xl p-8 h-full transition-all group-hover:border-secondary group-hover:airy-shadow-lg">
+<h4 class="font-headline-sm text-headline-sm text-primary mb-2">Boutique Firms</h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Collaborate seamlessly on high-value matters with unified client files.</p>
+</div>
+</div>
+<!-- Litigation -->
+<div class="group cursor-pointer">
+<div class="bg-card border border-border-warm rounded-xl p-8 h-full transition-all group-hover:border-secondary group-hover:airy-shadow-lg">
+<h4 class="font-headline-sm text-headline-sm text-primary mb-2">Litigation Teams</h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Manage complex discovery, timelines, and court filings with ease.</p>
+</div>
+</div>
+<!-- Conveyancing -->
+<div class="group cursor-pointer">
+<div class="bg-card border border-border-warm rounded-xl p-8 h-full transition-all group-hover:border-secondary group-hover:airy-shadow-lg">
+<h4 class="font-headline-sm text-headline-sm text-primary mb-2">Conveyancing</h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Track property transfers and FICA requirements in a structured flow.</p>
+</div>
+</div>
+<!-- NGOs -->
+<div class="group cursor-pointer">
+<div class="bg-card border border-border-warm rounded-xl p-8 h-full transition-all group-hover:border-secondary group-hover:airy-shadow-lg">
+<h4 class="font-headline-sm text-headline-sm text-primary mb-2">Legal Aid &amp; NGOs</h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Handle high volumes of public-interest cases with transparent reporting.</p>
+</div>
+</div>
+<!-- In-house -->
+<div class="group cursor-pointer">
+<div class="bg-card border border-border-warm rounded-xl p-8 h-full transition-all group-hover:border-secondary group-hover:airy-shadow-lg">
+<h4 class="font-headline-sm text-headline-sm text-primary mb-2">In-House Teams</h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Control external counsel costs and internal legal compliance risks.</p>
+</div>
+</div>
+</div>
+</section>
+<!-- Security Section -->
+<section class="bg-primary text-white py-24">
+<div class="max-w-max-width mx-auto px-margin-desktop grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+<div>
+<h2 class="font-headline-lg text-headline-lg mb-6">Confidentiality is not a feature. It is the foundation.</h2>
+<div class="space-y-6">
+<div class="flex gap-4">
+<span class="material-symbols-outlined text-secondary-fixed-dim">verified</span>
+<div>
+<h4 class="font-headline-sm text-headline-sm">Firm-Level Isolation</h4>
+<p class="text-primary-fixed/60 font-body-sm">Data is strictly partitioned. No cross-firm data leaks, ever.</p>
+</div>
+</div>
+<div class="flex gap-4">
+<span class="material-symbols-outlined text-secondary-fixed-dim">lock_person</span>
+<div>
+<h4 class="font-headline-sm text-headline-sm">Matter-Level Permissions</h4>
+<p class="text-primary-fixed/60 font-body-sm">Control precisely who within your firm can see sensitive case files.</p>
+</div>
+</div>
+<div class="flex gap-4">
+<span class="material-symbols-outlined text-secondary-fixed-dim">assignment_turned_in</span>
+<div>
+<h4 class="font-headline-sm text-headline-sm">POPIA Compliance</h4>
+<p class="text-primary-fixed/60 font-body-sm">Designed according to South African data protection regulations.</p>
+</div>
+</div>
+</div>
+<p class="mt-12 text-[10px] text-primary-fixed/40 italic">Legal Disclaimer: Legal Matters provides software for practice management. Use of the software does not constitute legal advice and does not create an attorney-client relationship between the user and the software provider.</p>
+</div>
+<div class="relative">
+<div class="aspect-video bg-white/5 rounded-2xl border border-white/10 flex items-center justify-center">
+<div class="text-center space-y-4">
+<span class="material-symbols-outlined text-6xl text-secondary-fixed-dim" style="font-variation-settings: 'FILL' 1;">security</span>
+<div class="font-label-md tracking-widest uppercase opacity-80">Audit Log Active</div>
+<div class="flex justify-center gap-2">
+<div class="w-1 h-1 bg-success animate-pulse rounded-full"></div>
+<div class="w-1 h-1 bg-success animate-pulse rounded-full delay-75"></div>
+<div class="w-1 h-1 bg-success animate-pulse rounded-full delay-150"></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Pricing Preview -->
+<section class="py-24 px-margin-desktop max-w-max-width mx-auto">
+<h2 class="font-headline-lg text-headline-lg text-primary text-center mb-16">Simple pricing for serious practice.</h2>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+<!-- Starter -->
+<div class="bg-card border border-border-warm p-8 rounded-xl flex flex-col h-full">
+<span class="font-label-md text-label-md uppercase text-secondary mb-4">Starter</span>
+<div class="text-4xl font-bold text-primary mb-4">Early Access</div>
+<p class="text-on-surface-variant text-body-sm mb-8">Perfect for solo practitioners starting their digital journey.</p>
+<ul class="space-y-4 mb-10 flex-grow">
+<li class="flex items-center gap-2 text-sm"><span class="material-symbols-outlined text-success text-sm">check_circle</span> 10 Active Matters</li>
+<li class="flex items-center gap-2 text-sm"><span class="material-symbols-outlined text-success text-sm">check_circle</span> Basic POPIA Tools</li>
+<li class="flex items-center gap-2 text-sm"><span class="material-symbols-outlined text-success text-sm">check_circle</span> Secure Vault</li>
+</ul>
+<button class="w-full border-2 border-primary text-primary font-label-md text-label-md py-3 rounded-lg hover:bg-primary hover:text-white transition-all">Join Early Access</button>
+</div>
+<!-- Professional -->
+<div class="bg-primary text-white p-8 rounded-xl flex flex-col h-full airy-shadow-lg transform scale-105">
+<div class="flex justify-between items-start mb-4">
+<span class="font-label-md text-label-md uppercase text-secondary-fixed-dim">Professional</span>
+<span class="bg-secondary text-white text-[10px] px-2 py-1 rounded font-bold uppercase">Popular</span>
+</div>
+<div class="text-4xl font-bold mb-4 text-white">Early Access</div>
+<p class="text-primary-fixed/60 text-body-sm mb-8">Designed for growing firms needing deeper control.</p>
+<ul class="space-y-4 mb-10 flex-grow">
+<li class="flex items-center gap-2 text-sm"><span class="material-symbols-outlined text-secondary-fixed-dim text-sm">check_circle</span> Unlimited Matters</li>
+<li class="flex items-center gap-2 text-sm"><span class="material-symbols-outlined text-secondary-fixed-dim text-sm">check_circle</span> Matter Permissions</li>
+<li class="flex items-center gap-2 text-sm"><span class="material-symbols-outlined text-secondary-fixed-dim text-sm">check_circle</span> Custom Audit Trails</li>
+</ul>
+<button class="w-full bronze-gradient text-white font-label-md text-label-md py-3 rounded-lg hover:brightness-110 transition-all">Join Early Access</button>
+</div>
+<!-- Firm -->
+<div class="bg-card border border-border-warm p-8 rounded-xl flex flex-col h-full">
+<span class="font-label-md text-label-md uppercase text-secondary mb-4">Firm</span>
+<div class="text-4xl font-bold text-primary mb-4">Early Access</div>
+<p class="text-on-surface-variant text-body-sm mb-8">Enterprise-grade features for established practices.</p>
+<ul class="space-y-4 mb-10 flex-grow">
+<li class="flex items-center gap-2 text-sm"><span class="material-symbols-outlined text-success text-sm">check_circle</span> Multi-Branch Support</li>
+<li class="flex items-center gap-2 text-sm"><span class="material-symbols-outlined text-success text-sm">check_circle</span> Dedicated Portal</li>
+<li class="flex items-center gap-2 text-sm"><span class="material-symbols-outlined text-success text-sm">check_circle</span> Priority Support</li>
+</ul>
+<button class="w-full border-2 border-primary text-primary font-label-md text-label-md py-3 rounded-lg hover:bg-primary hover:text-white transition-all">Join Early Access</button>
+</div>
+</div>
+</section>
+<!-- Final CTA -->
+<section class="py-24 bg-primary-container relative overflow-hidden">
+<div class="max-w-max-width mx-auto px-margin-desktop text-center relative z-10">
+<h2 class="font-headline-xl text-headline-xl text-white mb-6">See Legal Matters in action.</h2>
+<p class="text-primary-fixed/60 font-body-lg max-w-xl mx-auto mb-10">Experience the future of South African legal practice today. Book your personalized demo.</p>
+<div class="flex flex-col sm:flex-row justify-center gap-4">
+<button class="bronze-gradient text-white font-label-md text-label-md px-12 py-5 rounded-lg hover:brightness-110 transition-all airy-shadow-lg">Book a Demo</button>
+<button class="bg-white/10 text-white font-label-md text-label-md px-12 py-5 rounded-lg hover:bg-white/20 transition-all">Join Waiting List</button>
+</div>
+</div>
+<!-- Background accents -->
+<div class="absolute top-0 right-0 w-1/2 h-full bg-secondary/5 blur-[120px] rounded-full translate-x-1/2 -translate-y-1/2"></div>
+</section>
+<!-- Footer -->
+<footer class="bg-surface-container-low border-t border-warm pt-20 pb-12">
+<div class="max-w-max-width mx-auto px-margin-desktop">
+<div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-gutter mb-16">
+<div class="col-span-2">
+<div class="mb-6"><img alt="Legal Matters Logo" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAKaUmn_T7x2Y9DaWLwSz26L8VZ4mkmS73HivCWLB6kzH0yICHxKzWcl6aosl_A8eaAputPLmNA2cQGkwlMpR9ie1fNcaxc79Hq2bR5cNHKyltm0K3Lq_e87xGR1WR4Nn6xoamilBkmdreApDMbvKogMWNtjvcNOZAt2rnzjuC_G5C9INKN_dle-ymmM59PvWqZBVcJk1-YMB26FctrDKf_J5B_9Fs3ExAL_fhHWyaTgX4Uv0vyCTXzXHzd4yqiFl-gCzj5okfpAgQ"/></div>
+<p class="text-on-surface-variant font-body-sm max-w-xs">Built for the South African legal market. Leading the transition to a modern, digital-first legal practice.</p>
+</div>
+<div>
+<h5 class="font-label-md text-label-md text-primary mb-6">Product</h5>
+<ul class="space-y-4">
+<li class=""><a class="text-on-surface-variant hover:text-secondary text-label-sm transition-colors" href="#">Features</a></li>
+<li class=""><a class="text-on-surface-variant hover:text-secondary text-label-sm transition-colors" href="#">Security</a></li>
+<li class=""><a class="text-on-surface-variant hover:text-secondary text-label-sm transition-colors" href="#">Pricing</a></li>
+</ul>
+</div>
+<div>
+<h5 class="font-label-md text-label-md text-primary mb-6">Solutions</h5>
+<ul class="space-y-4">
+<li class=""><a class="text-on-surface-variant hover:text-secondary text-label-sm transition-colors" href="#">Solo Practice</a></li>
+<li class=""><a class="text-on-surface-variant hover:text-secondary text-label-sm transition-colors" href="#">Boutique Firms</a></li>
+<li class=""><a class="text-on-surface-variant hover:text-secondary text-label-sm transition-colors" href="#">Litigation</a></li>
+</ul>
+</div>
+<div>
+<h5 class="font-label-md text-label-md text-primary mb-6">Company</h5>
+<ul class="space-y-4">
+<li class=""><a class="text-on-surface-variant hover:text-secondary text-label-sm transition-colors" href="#">About Us</a></li>
+<li class=""><a class="text-on-surface-variant hover:text-secondary text-label-sm transition-colors" href="#">Contact</a></li>
+<li class=""><a class="text-on-surface-variant hover:text-secondary text-label-sm transition-colors" href="#">Partners</a></li>
+</ul>
+</div>
+<div>
+<h5 class="font-label-md text-label-md text-primary mb-6">Legal</h5>
+<ul class="space-y-4">
+<li class=""><a class="text-on-surface-variant hover:text-secondary text-label-sm transition-colors" href="#">Privacy Policy</a></li>
+<li class=""><a class="text-on-surface-variant hover:text-secondary text-label-sm transition-colors" href="#">Terms of Use</a></li>
+<li class=""><a class="text-on-surface-variant hover:text-secondary text-label-sm transition-colors" href="#">Security Standards</a></li>
+</ul>
+</div>
+</div>
+<div class="flex flex-col md:flex-row justify-between items-center border-t border-warm pt-8 gap-4">
+<p class="text-on-surface-variant font-label-sm text-label-sm text-center md:text-left">© 2024 Legal Matters. Built for the South African legal market. POPIA Compliant.</p>
+<div class="flex gap-6">
+<a class="text-on-surface-variant hover:text-secondary transition-colors" href="#"><span class="material-symbols-outlined">public</span></a>
+<a class="text-on-surface-variant hover:text-secondary transition-colors" href="#"><span class="material-symbols-outlined">alternate_email</span></a>
+<a class="text-on-surface-variant hover:text-secondary transition-colors" href="#"><span class="material-symbols-outlined">info</span></a>
+</div>
+</div>
+</div>
+</footer>
+<script>
+        // Simple scroll observer for nav transparency
+        window.addEventListener('scroll', () => {
+            const nav = document.querySelector('nav');
+            if (window.scrollY > 50) {
+                nav.classList.add('h-16');
+                nav.classList.remove('h-20');
+            } else {
+                nav.classList.add('h-20');
+                nav.classList.remove('h-16');
+            }
+        });
+    </script>
+</body></html>
