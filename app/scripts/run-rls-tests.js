@@ -59,10 +59,10 @@ async function run() {
 
   if (allPassed) {
     console.log('✅ All RLS helper tests passed successfully!');
-    process.exit(0);
+    setTimeout(() => process.exit(0), 100);
   } else {
     console.error('❌ Some RLS helper tests failed. Please review the results.');
-    process.exit(1);
+    setTimeout(() => process.exit(1), 100);
   }
 }
 

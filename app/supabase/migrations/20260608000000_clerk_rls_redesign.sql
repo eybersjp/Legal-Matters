@@ -1,8 +1,3 @@
--- Drop old functions to ensure clean definitions
-DROP FUNCTION IF EXISTS get_auth_firm_id();
-DROP FUNCTION IF EXISTS get_auth_role();
-DROP FUNCTION IF EXISTS get_auth_user_id();
-
 -- 1. Create helper function get_auth_user_id() safely extracting text user ID from Clerk JWT
 CREATE OR REPLACE FUNCTION get_auth_user_id()
 RETURNS TEXT
@@ -70,7 +65,7 @@ BEGIN
   DELETE FROM firms WHERE id = v_firm_id;
   
   -- Insert mock data
-  INSERT INTO firms (id, name) VALUES (v_firm_id, 'Test Firm RLS');
+  INSERT INTO firms (id, name, lpc_registration_number) VALUES (v_firm_id, 'Test Firm RLS', 'LPC-TEST-12345');
   INSERT INTO firm_members (id, firm_id, role) VALUES (v_user_id, v_firm_id, 'Partner');
 
   -- Test 1: get_auth_user_id when claims are set
