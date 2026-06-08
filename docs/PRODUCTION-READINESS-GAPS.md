@@ -36,7 +36,14 @@ This document identifies the remaining compliance, testing, operational, and sec
 
 ---
 
-## 📈 4. Performance, Scale, & User Validation
+## 📂 4. Secure Document Hub & Storage Gaps
+- [ ] **22. Live AI OCR / Extraction Pipeline**: Implement background processing queues (e.g., Ingest workers) to run actual OCR and LLM summarization. The current implementation uses static placeholders for safety and testing.
+- [ ] **23. Storage RLS Policies**: Implement custom storage bucket policies matching `firm_id` via Clerk JWT claims if client-side direct uploads are introduced in the future.
+- [ ] **24. POPIA Retention & Deletion Scheduler**: Build a database-driven cron scheduler to automate deletion of archived files once POPIA consent expires or statutory LPC retention periods (typically 7 years) are met.
+
+---
+
+## 📈 5. Performance, Scale, & User Validation
 - [ ] **18. Load & Load-Stress Testing**: Run simulated HTTP request scenarios (e.g. using k6) to verify edge routers stay responsive under high practitioner loads.
 - [ ] **19. Accessibility Review**: Confirm dashboard interfaces satisfy WCAG 2.1 accessibility standards.
 - [ ] **20. User Acceptance Testing (UAT)**: Run extensive onboarding and practice scenarios with legal practitioners, solo lawyers, and administrative staff to identify operational bottlenecks.

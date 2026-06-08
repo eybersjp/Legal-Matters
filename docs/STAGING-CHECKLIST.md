@@ -58,5 +58,18 @@ This checklist tracks the deployment validation requirements for the **Legal Mat
 - [x] **Initial Schema Applied**: Confirm `20260525000000_init_schemas.sql`, `20260525000001_enable_rls.sql`, and `20260525000002_audit_triggers.sql` are applied.
 - [x] **Clerk Auth Migration Applied**: Confirm `20260526000000_clerk_auth_migration.sql` has been executed — this changes `firm_members.id` and all 12 child-table FK columns from `UUID` to `TEXT`.
 - [x] **Clerk RLS Redesign Migration Applied**: Confirm `20260608000000_clerk_rls_redesign.sql` has been executed — this updates RLS helper functions to be compatible with Clerk.
+- [x] **Secure Document Hub Migration Applied**: Confirm `20260608000003_secure_document_hub.sql` has been executed — this creates document summaries, references, and the private bucket.
 - [x] **FK Constraints Verified**: Verify that re-created FK constraints on `matter_team_members`, `time_entries`, `notifications`, `user_profiles`, `trust_account_records`, `popia_consents`, `document_versions`, `document_access_logs` are intact.
 - [x] **Auth.users FKs Dropped**: Confirm that `audit_logs.user_id` and `client_portal_access.portal_user_id` no longer reference `auth.users(id)` (not applicable with Clerk).
+
+---
+
+## 📂 7. Secure Document Hub & Storage
+- [x] **Private Storage Bucket**: Private bucket `legal-matters-docs` initialized.
+- [x] **Storage Path Randomized**: Verified storage path generation does not trust or use original filenames, using format `${firm_id}/${matter_id}/${uuid}${ext}`.
+- [x] **Matter Scoping Check**: Verification of matter ownership (`firm_id` matching Clerk token) enforced on uploads and updates.
+- [x] **Allowed File Types**: Enforced MIME type limits (PDF, DOCX, PNG, JPG, TXT) and 5MB size limit.
+- [x] **Immutable Audit Logging**: Document upload, versioning, archiving, and AI summary approvals write structured audit logs.
+- [x] **Matter Timeline Events**: Document hub mutations update the matter timeline correctly.
+- [x] **AI Placeholder & Loop**: Verified placeholder AI summary generation with manual practitioner approval and rejection workflow.
+- [x] **Test Validation**: Unit tests (`document-hub.test.ts`) and E2E Playwright test 12 successfully executed and passed.
