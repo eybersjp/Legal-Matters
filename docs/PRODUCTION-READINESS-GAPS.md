@@ -16,24 +16,25 @@ This document identifies the remaining compliance, testing, operational, and sec
 ---
 
 ## 🔒 2. Security & Penetration Hardening
-- [ ] **8. RLS Policy Audit & Penetration Test**: Execute exhaustive automated and manual testing on all Supabase RLS boundaries to verify zero SQL injection or privilege escalation pathways.
-- [ ] **9. Storage Access Penetration Test**: Test Supabase private storage signed-URL generation systems to ensure that signed links expire on time and are completely isolated.
-- [ ] **10. Full Security Penetration Test**: Commission a professional third-party cyber security firm to run external penetration tests against Vercel edge routers and custom domain endpoints.
+- [x] **8. RLS Redesign & Database Verification**: Redesign and verify database-side RLS helpers (`get_auth_user_id()`, `get_auth_firm_id()`, `get_auth_role()`) to safely support Clerk TEXT user IDs and prevent recursion (completed 2026-06-08).
+- [ ] **9. Client-side JWT E2E Verification**: Implement and verify client-side Clerk JWT token injection into Supabase headers. Direct client-side queries remain blocked; all database queries must proceed via Server Actions until this integration is fully implemented and tested.
+- [ ] **10. Storage Access Penetration Test**: Test Supabase private storage signed-URL generation systems to ensure that signed links expire on time and are completely isolated.
+- [ ] **11. Full Security Penetration Test**: Commission a professional third-party cyber security firm to run external penetration tests against Vercel edge routers and custom domain endpoints.
 
 ---
 
 ## ⚙️ 3. Operations, Backups, & Monitoring
-- [ ] **11. PITR (Point-in-Time Recovery) Backups**: Enable Supabase PITR in the production project settings to ensure you can restore the database to any exact millisecond in the event of a failure.
-- [ ] **12. Backup & Restore Validation**: Verify daily database and storage snapshot exports, and regularly run drill restores to verify file integrity.
-- [ ] **13. Real-time Monitoring & Alerting**: Setup CPU, memory, and database pool size alerts (notifying technical leads at 80% usage).
-- [ ] **14. Centralized Error Tracking**: Configure a production tool (e.g. Sentry) to capture UI and Edge API failures without leaking sensitive client PII.
-- [ ] **15. Incident Response Playbook**: Document exact operational runbooks for handling security alerts, database locking, or data recovery.
-- [ ] **16. Disaster Recovery & Failover Drill**: Conduct complete disaster recovery dry runs, simulating restoring the portal under a backup database in another region.
+- [ ] **12. PITR (Point-in-Time Recovery) Backups**: Enable Supabase PITR in the production project settings to ensure you can restore the database to any exact millisecond in the event of a failure.
+- [ ] **13. Backup & Restore Validation**: Verify daily database and storage snapshot exports, and regularly run drill restores to verify file integrity.
+- [ ] **14. Real-time Monitoring & Alerting**: Setup CPU, memory, and database pool size alerts (notifying technical leads at 80% usage).
+- [ ] **15. Centralized Error Tracking**: Configure a production tool (e.g. Sentry) to capture UI and Edge API failures without leaking sensitive client PII.
+- [ ] **16. Incident Response Playbook**: Document exact operational runbooks for handling security alerts, database locking, or data recovery.
+- [ ] **17. Disaster Recovery & Failover Drill**: Conduct complete disaster recovery dry runs, simulating restoring the portal under a backup database in another region.
 
 ---
 
 ## 📈 4. Performance, Scale, & User Validation
-- [ ] **17. Load & Load-Stress Testing**: Run simulated HTTP request scenarios (e.g. using k6) to verify edge routers stay responsive under high practitioner loads.
-- [ ] **18. Accessibility Review**: Confirm dashboard interfaces satisfy WCAG 2.1 accessibility standards.
-- [ ] **19. User Acceptance Testing (UAT)**: Run extensive onboarding and practice scenarios with legal practitioners, solo lawyers, and administrative staff to identify operational bottlenecks.
-- [ ] **20. Billing & Accounting System Audit**: Validate that sequential tax invoicing numbers, VAT computations, and ledger balances align with South African SARS tax guidelines.
+- [ ] **18. Load & Load-Stress Testing**: Run simulated HTTP request scenarios (e.g. using k6) to verify edge routers stay responsive under high practitioner loads.
+- [ ] **19. Accessibility Review**: Confirm dashboard interfaces satisfy WCAG 2.1 accessibility standards.
+- [ ] **20. User Acceptance Testing (UAT)**: Run extensive onboarding and practice scenarios with legal practitioners, solo lawyers, and administrative staff to identify operational bottlenecks.
+- [ ] **21. Billing & Accounting System Audit**: Validate that sequential tax invoicing numbers, VAT computations, and ledger balances align with South African SARS tax guidelines.
