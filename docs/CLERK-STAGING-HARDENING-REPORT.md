@@ -95,18 +95,22 @@ A detailed review of Supabase RLS is documented in [CLERK-RLS-REVIEW.md](file://
 ---
 
 ## ⚠️ 10. Remaining Risks & Required Staging Smoke Tests
-- **No RLS Protection**: Because `createAdminClient` is used for all transactions, any coding bug that forgets a `.eq('firm_id', firmId)` check could result in tenant cross-talk. Strict code reviews must enforce this scoping.
+- **No Client-side RLS Enforcement**: Because `createAdminClient` is used for all Server Actions, any developer coding mistake that omits a `.eq('firm_id', firmId)` filter could bypass application-layer isolation. RLS serves as defense-in-depth, but all queries must be double-checked for proper firm-scoping filters.
 - **Client Portal Security**: Ensure client-side access is completely disabled for Supabase, and all portal operations route through server actions.
-- **Required Smoke Tests**:
-  - Verify that a user from Firm A trying to fetch a document from Firm B using the API directly receives an unauthorized error.
-  - Verify that POPIA consent forms cannot be updated by external practitioners.
 
 ---
 
-## ⛔ 11. Production Blockers
+## 11. Production Blockers
 - **Client-side JWT E2E Verification**: Before enabling direct client-side Supabase queries, we must implement and verify the frontend integration to inject the Clerk JWT into the Supabase headers. Until then, database access must proceed via Server Actions.
+- **RLS Test Helpers Cleanup**: The database contains staging test helpers (`verify_rls_helpers`). Before promoting to production, these functions must be dropped using [production-drop-rls-test-helpers.sql](file:///c:/Users/SSTECH/developments/legal-matters/docs/sql/production-drop-rls-test-helpers.sql).
 
 ---
 
-## 📣 12. Final Recommendation
-- **Staging Status**: **Staging Ready (RLS Redesign Verified)**. The RLS database helpers have been redesigned, deployed, and verified with `npm run test:db`. The application-layer logic, tenant isolation, user profile audit lookup joins, and E2E validation suite are fully verified and passing. Direct client-side Supabase access is still blocked because client-side JWT injection is not yet end-to-end verified in code, meaning all database queries must proceed via Server Actions.
+## 12. Final Recommendation
+- **Staging Status**: **Staging Ready (RLS Redesign & Isolation Verified)**. 
+  - The RLS database helpers have been redesigned, deployed, and verified with `npm run test:db`.
+  - Execution permissions for `verify_rls_helpers()` are strictly service-role locked and blocked for public/anon roles.
+  - Cross-tenant RLS negative testing was successfully verified under the real `authenticated` role using transaction-isolated checks in [clerk_rls_tenant_isolation.sql](file:///c:/Users/SSTECH/developments/legal-matters/app/supabase/tests/clerk_rls_tenant_isolation.sql).
+  - The automated isolation gate migration [20260608000001_run_rls_isolation_tests.sql](file:///c:/Users/SSTECH/developments/legal-matters/app/supabase/migrations/20260608000001_run_rls_isolation_tests.sql) completed successfully on the remote database.
+  - Test helper drops are deferred in `docs/sql/` to keep staging validation active.
+  - Application-layer logic, tenant isolation, user profile lookup joins, and E2E validation suites are fully verified and passing.

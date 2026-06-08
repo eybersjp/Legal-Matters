@@ -42,7 +42,7 @@ async function run() {
   const { data, error } = await supabase.rpc('verify_rls_helpers');
 
   if (error) {
-    console.error('Error executing verify_rls_helpers RPC:', error);
+    console.error('Error executing verify_rls_helpers RPC with service role:', error);
     process.exit(1);
   }
 
@@ -57,11 +57,39 @@ async function run() {
   });
   console.log('-------------------------------------\n');
 
+  // Security Verification: verify_rls_helpers MUST NOT be callable by anon/public keys
+  console.log('Verifying verify_rls_helpers execute restriction for public role...');
+  const anonKey = env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  if (!anonKey) {
+    console.error('Error: NEXT_PUBLIC_SUPABASE_ANON_KEY is missing from .env.local');
+    process.exit(1);
+  }
+
+  const anonClient = createClient(supabaseUrl, anonKey, {
+    auth: { persistSession: false }
+  });
+
+  const { error: anonError } = await anonClient.rpc('verify_rls_helpers');
+  
+  if (!anonError) {
+    console.error('❌ Security Failure: verify_rls_helpers() was executed successfully by public/anon role!');
+    allPassed = false;
+  } else {
+    // PostgREST code '42501' represents permission denied
+    if (anonError.code === '42501' || anonError.message.toLowerCase().includes('permission denied')) {
+      console.log('✅ Security Pass: verify_rls_helpers() execute permission successfully denied for public/anon role (Error: ' + anonError.message + ')');
+    } else {
+      console.warn('⚠️ Received unexpected error code/message for anon access block: ', anonError);
+      allPassed = false;
+    }
+  }
+  console.log('');
+
   if (allPassed) {
-    console.log('✅ All RLS helper tests passed successfully!');
+    console.log('✅ All RLS helper and security permission tests passed successfully!');
     setTimeout(() => process.exit(0), 100);
   } else {
-    console.error('❌ Some RLS helper tests failed. Please review the results.');
+    console.error('❌ Some RLS helper or security permission tests failed. Please review the results.');
     setTimeout(() => process.exit(1), 100);
   }
 }
@@ -70,3 +98,4 @@ run().catch(err => {
   console.error('Unexpected error running tests:', err);
   process.exit(1);
 });
+

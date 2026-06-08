@@ -73,5 +73,10 @@ We reviewed the following files and database constructs:
 
 1. **Enforced Data Access Boundary**: All database actions must go through Next.js Server Actions. Direct client-side Supabase queries remain blocked because client-side JWT injection is not end-to-end verified in code.
 2. **Database-Side RLS Enforcement**: The RLS helper functions are fully deployed and function as a robust defense-in-depth boundary.
-3. **Hardened verify_rls_helpers()**: Execution permissions for `verify_rls_helpers()` are strictly revoked from `public`, `anon`, and `authenticated`, limiting access to `service_role` only.
+3. **Hardened verify_rls_helpers()**: Execution permissions for `verify_rls_helpers()` are strictly revoked from `public`, `anon`, and `authenticated`, limiting access to `service_role` only. This execute restriction is automatically tested and verified via `npm run test:db`.
+4. **Cross-Tenant RLS Negative Tests**: Explicit tenant-isolation testing has been implemented and verified under the real `authenticated` role.
+   - The test file [clerk_rls_tenant_isolation.sql](file:///c:/Users/SSTECH/developments/legal-matters/app/supabase/tests/clerk_rls_tenant_isolation.sql) performs role switching (`SET LOCAL ROLE authenticated`) and JWT claim mocking inside a transaction block to verify that User A cannot read Firm B data, User B cannot read Firm A data, and users without firm records read zero records.
+   - An automated isolation gate was successfully executed on the remote database as migration [20260608000001_run_rls_isolation_tests.sql](file:///c:/Users/SSTECH/developments/legal-matters/app/supabase/migrations/20260608000001_run_rls_isolation_tests.sql).
+5. **Deferred Cleanup**: The SQL drop helper script is saved at [production-drop-rls-test-helpers.sql](file:///c:/Users/SSTECH/developments/legal-matters/docs/sql/production-drop-rls-test-helpers.sql) to clean up test functions prior to production deployment. Test helpers are allowed to remain on the staging DB for regular validation checks.
+
 

@@ -17,9 +17,12 @@ This document identifies the remaining compliance, testing, operational, and sec
 
 ## 🔒 2. Security & Penetration Hardening
 - [x] **8. RLS Redesign & Database Verification**: Redesign and verify database-side RLS helpers (`get_auth_user_id()`, `get_auth_firm_id()`, `get_auth_role()`) to safely support Clerk TEXT user IDs and prevent recursion (completed 2026-06-08).
+- [x] **8a. Cross-Tenant RLS Negative Tests**: Verify multi-tenant RLS isolation under the real `authenticated` role using transaction-isolated checks in `clerk_rls_tenant_isolation.sql` and automated migration gate `20260608000001_run_rls_isolation_tests.sql` (completed 2026-06-08).
 - [ ] **9. Client-side JWT E2E Verification**: Implement and verify client-side Clerk JWT token injection into Supabase headers. Direct client-side queries remain blocked; all database queries must proceed via Server Actions until this integration is fully implemented and tested.
 - [ ] **10. Storage Access Penetration Test**: Test Supabase private storage signed-URL generation systems to ensure that signed links expire on time and are completely isolated.
+- [ ] **10a. Drop RLS Staging/Testing Helpers**: Drop testing RPCs before production release using `docs/sql/production-drop-rls-test-helpers.sql` (deferred to production hardening sprint).
 - [ ] **11. Full Security Penetration Test**: Commission a professional third-party cyber security firm to run external penetration tests against Vercel edge routers and custom domain endpoints.
+
 
 ---
 
