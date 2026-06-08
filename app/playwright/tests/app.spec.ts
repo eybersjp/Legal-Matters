@@ -26,7 +26,7 @@ test.describe('Legal Matters E2E Workspace Verification', () => {
     await context.addCookies([{
       name: 'mock-authenticated',
       value: 'true',
-      url: 'http://localhost:3001'
+      url: 'http://localhost:3333'
     }]);
 
     await page.goto('/dashboard');
@@ -37,7 +37,7 @@ test.describe('Legal Matters E2E Workspace Verification', () => {
     await context.addCookies([{
       name: 'mock-authenticated',
       value: 'true',
-      url: 'http://localhost:3001'
+      url: 'http://localhost:3333'
     }]);
 
     await page.goto('/dashboard');
@@ -56,7 +56,7 @@ test.describe('Legal Matters E2E Workspace Verification', () => {
     await context.addCookies([{
       name: 'mock-authenticated',
       value: 'true',
-      url: 'http://localhost:3001'
+      url: 'http://localhost:3333'
     }]);
 
     await page.goto('/dashboard/documents');
@@ -70,7 +70,7 @@ test.describe('Legal Matters E2E Workspace Verification', () => {
     await context.addCookies([{
       name: 'mock-authenticated',
       value: 'true',
-      url: 'http://localhost:3001'
+      url: 'http://localhost:3333'
     }]);
 
     await page.goto('/dashboard');
@@ -86,7 +86,7 @@ test.describe('Legal Matters E2E Workspace Verification', () => {
     await context.addCookies([{
       name: 'mock-authenticated',
       value: 'true',
-      url: 'http://localhost:3001'
+      url: 'http://localhost:3333'
     }]);
 
     await page.setViewportSize({ width: 375, height: 667 });
@@ -131,5 +131,37 @@ test.describe('Legal Matters E2E Workspace Verification', () => {
     // in mock mode it queries a mock db which returns empty profiles map.
     // Thus it will correctly return the "no workspace linked yet" error!
     await expect(page.locator('text=no firm workspace has been linked yet').first()).toBeVisible();
+  });
+
+  test('12. Matter Documents Hub workflow works (AI summary, details drawer, approval)', async ({ page, context }) => {
+    await context.addCookies([{
+      name: 'mock-authenticated',
+      value: 'true',
+      url: 'http://localhost:3333'
+    }]);
+
+    // Navigate to Matter Documents page
+    await page.goto('/dashboard/matters/mock-matter-1/documents');
+    await expect(page.locator('text=Document Hub').first()).toBeVisible();
+
+    // Verify document records are listed
+    await expect(page.locator('text=Summons and Particulars of Claim').first()).toBeVisible();
+    await expect(page.locator('text=Client Interview Notes').first()).toBeVisible();
+
+    // Click on Client Interview Notes to open details panel
+    await page.click('text=Client Interview Notes');
+
+    // Verify detail panel elements are visible
+    await expect(page.locator('text=Vault Metadata').first()).toBeVisible();
+    await expect(page.locator('text=AI Summary Hub').first()).toBeVisible();
+    await expect(page.locator('text=Placeholder Document Summary').first()).toBeVisible();
+
+    // Perform approval action
+    const approveBtn = page.locator('button:has-text("Approve Summary")');
+    await expect(approveBtn).toBeVisible();
+    await approveBtn.click();
+
+    // Verify success banner is shown
+    await expect(page.locator('text=AI summary was successfully approved').first()).toBeVisible();
   });
 });
