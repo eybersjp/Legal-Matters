@@ -29,13 +29,19 @@ export function createClient() {
           if (email === 'fail@example.com' || password === 'wrong') {
             return { error: { message: 'Invalid credentials' }, data: { user: null } };
           }
+          try {
+            cookieStore.set('mock-authenticated', 'true', { path: '/' });
+          } catch {
+            // Safe fallback
+          }
+          const isNoFirm = email === 'nofirm@example.com';
           return {
             data: {
               user: {
-                id: 'mock-user-uuid',
+                id: isNoFirm ? 'mock-user-no-firm-uuid' : 'mock-user-uuid',
                 email: email,
                 user_metadata: {
-                  firm_id: 'mock-firm-uuid',
+                  firm_id: isNoFirm ? null : 'mock-firm-uuid',
                   role: 'Partner'
                 }
               }
@@ -182,18 +188,32 @@ export function createClient() {
 
 export function createAdminClient() {
   if (process.env.NEXT_PUBLIC_TEST_MODE === 'true' && process.env.NODE_ENV !== 'production') {
-    return {
-      from: () => ({
-        insert: async () => ({ error: null }),
-        select: () => ({
-          eq: () => ({
-            order: () => ({
-              limit: async () => ({ data: [], error: null })
-            })
-          })
-        })
-      })
-    } as any;
+    let currentTable = '';
+    let currentId = '';
+    const mockChain: any = {
+      from: (table: string) => {
+        currentTable = table;
+        return mockChain;
+      },
+      insert: async () => ({ error: null }),
+      select: () => mockChain,
+      eq: (col: string, val: string) => {
+        if (col === 'id' || col === 'member_id') currentId = val;
+        return mockChain;
+      },
+      order: () => mockChain,
+      limit: async () => ({ data: [], error: null }),
+      single: async () => {
+        if (currentTable === 'firm_members') {
+          if (currentId === 'mock-user-no-firm-uuid') {
+            return { data: null, error: { message: 'Row not found' } };
+          }
+          return { data: { id: 'mock-user-uuid', firm_id: 'mock-firm-uuid', role: 'Partner' }, error: null };
+        }
+        return { data: {}, error: null };
+      }
+    };
+    return mockChain;
   }
 
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;

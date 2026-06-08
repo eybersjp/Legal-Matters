@@ -100,4 +100,36 @@ test.describe('Legal Matters E2E Workspace Verification', () => {
     const clientLink = page.locator('aside.lg\\:hidden >> text=Clients Registry');
     await expect(clientLink).toBeVisible();
   });
+
+  test('9. Invalid login credentials display clear error warning', async ({ page }) => {
+    await page.goto('/login');
+    await page.fill('input[type="email"]', 'fail@example.com');
+    await page.fill('input[type="password"]', 'wrong');
+    await page.click('button[type="submit"]');
+
+    await expect(page.locator('text=Invalid credentials').first()).toBeVisible();
+  });
+
+  test('10. Successful practitioner login redirects dynamically to dashboard', async ({ page }) => {
+    await page.goto('/login');
+    await page.fill('input[type="email"]', 'partner@example.com');
+    await page.fill('input[type="password"]', 'valid_password');
+    await page.click('button[type="submit"]');
+
+    await expect(page).toHaveURL(/.*dashboard.*/);
+  });
+
+  test('11. Authenticated user without active firm workspace is handled clearly', async ({ page }) => {
+    await page.goto('/login');
+    await page.fill('input[type="email"]', 'nofirm@example.com');
+    // Our mock signInWithPassword returns a mock user, but in our code, if we want to simulate
+    // no firm membership, let's verify if the error message is displayed
+    await page.fill('input[type="password"]', 'valid_password');
+    await page.click('button[type="submit"]');
+    
+    // Since our database check inside the mock environment queries firm_members table,
+    // in mock mode it queries a mock db which returns empty profiles map.
+    // Thus it will correctly return the "no workspace linked yet" error!
+    await expect(page.locator('text=no firm workspace has been linked yet').first()).toBeVisible();
+  });
 });

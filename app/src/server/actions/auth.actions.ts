@@ -6,8 +6,10 @@ import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 
 export async function loginUser(formData: any) {
+  console.log('Login attempt started');
   const parsed = LoginValidationSchema.safeParse(formData);
   if (!parsed.success) {
+    console.log('Login failed: invalid form inputs');
     return { success: false, error: parsed.error.issues[0].message };
   }
 
@@ -18,7 +20,34 @@ export async function loginUser(formData: any) {
   });
 
   if (error) {
+    console.log('Login failed:', error.message);
     return { success: false, error: error.message };
+  }
+
+  console.log('Login succeeded');
+
+  // Verify Firm Workspace Membership to prevent silent post-auth redirect failures
+  let hasFirmMembership = true;
+  try {
+    const adminDb = createAdminClient();
+    if (adminDb && data.user) {
+      const { data: member } = await adminDb
+        .from('firm_members')
+        .select('id, firm_id')
+        .eq('id', data.user.id)
+        .single();
+
+      if (!member) {
+        console.log('No firm membership found');
+        hasFirmMembership = false;
+      }
+    }
+  } catch (err) {
+    console.error('Failed to verify firm membership registry:', err);
+  }
+
+  if (!hasFirmMembership) {
+    return { success: false, error: 'Your account is active, but no firm workspace has been linked yet.' };
   }
 
   // Record Auth Audit Log - wrapped in try-catch so logging failures don't block critical login path
@@ -44,7 +73,9 @@ export async function loginUser(formData: any) {
   const role = data.user?.user_metadata?.role;
   const redirectTo = role === 'Client' ? '/portal' : '/dashboard';
 
+  console.log(role === 'Client' ? 'Redirecting to client portal' : 'Redirecting to dashboard');
   return { success: true, redirectTo };
+
 
 }
 
