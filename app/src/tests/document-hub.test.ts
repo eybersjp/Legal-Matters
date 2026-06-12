@@ -1,8 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import {
   uploadDocument,
-  createDocumentVersion,
-  archiveDocument,
   generatePlaceholderAISummary,
   approveRejectAISummary
 } from '../server/actions/document.actions';

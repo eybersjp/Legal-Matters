@@ -5,7 +5,7 @@ export const dynamic = 'force-dynamic';
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { logoutUser } from '@/server/actions/auth.actions';
+import { useClerk, UserButton } from '@clerk/nextjs';
 import { 
   getNotificationsList, 
   markNotificationAsRead, 
@@ -43,6 +43,7 @@ interface NotificationItem {
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const { signOut } = useClerk();
   const [theme, setTheme] = useState<'light' | 'dark'>('dark');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
@@ -170,9 +171,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             {theme === 'dark' ? <Sun className="h-4 w-4 text-gold-400" /> : <Moon className="h-4 w-4" />}
           </button>
 
-          {/* Sign Out */}
           <button
-            onClick={() => logoutUser()}
+            onClick={() => signOut({ redirectUrl: '/' })}
             className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-semibold text-red-500 hover:bg-red-500/10 transition"
           >
             <LogOut className="h-5 w-5" />
@@ -294,7 +294,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               )}
             </div>
 
-            {/* Mobile Menu Trigger */}
+            {/* Clerk User Button */}
+          <UserButton showName />
+
+          {/* Mobile Menu Trigger */}
             <button
               onClick={() => {
                 setMobileMenuOpen(!mobileMenuOpen);
@@ -341,7 +344,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 {theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
               </button>
               <button
-                onClick={() => logoutUser()}
+                onClick={() => signOut({ redirectUrl: '/' })}
                 className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-semibold text-red-500 hover:bg-red-500/10 transition"
               >
                 <LogOut className="h-5 w-5" />

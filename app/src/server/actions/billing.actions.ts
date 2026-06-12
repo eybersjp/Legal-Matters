@@ -1,14 +1,16 @@
 'use server';
 
-import { createClient, createAdminClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/server';
+import { requireAuthUser } from '@/lib/auth';
 import { revalidatePath } from 'next/cache';
 
 const VAT_RATE = 0.15; // South African Standard VAT rate (15%)
 
 export async function getInvoicesList() {
-  const supabase = createClient();
+  const { firmId } = await requireAuthUser();
+  const adminDb = createAdminClient();
 
-  const { data, error } = await supabase
+  const { data, error } = await adminDb
     .from('invoices')
     .select(`
       id,
@@ -28,6 +30,7 @@ export async function getInvoicesList() {
         title
       )
     `)
+    .eq('firm_id', firmId)
     .order('created_at', { ascending: false });
 
   if (error) throw new Error(error.message);
@@ -47,11 +50,14 @@ export async function getInvoicesList() {
 }
 
 export async function getUnbilledEntriesForMatter(matterId: string) {
-  const supabase = createClient();
-  const { data, error } = await supabase
+  const { firmId } = await requireAuthUser();
+  const adminDb = createAdminClient();
+
+  const { data, error } = await adminDb
     .from('time_entries')
     .select('*')
     .eq('matter_id', matterId)
+    .eq('firm_id', firmId)
     .eq('is_billed', false);
 
   if (error) throw new Error(error.message);
@@ -59,11 +65,7 @@ export async function getUnbilledEntriesForMatter(matterId: string) {
 }
 
 export async function generateTaxInvoice(matterId: string) {
-  const supabase = createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return { success: false, error: 'Unauthenticated.' };
-
-  const firmId = user.user_metadata?.firm_id;
+  const { userId, firmId } = await requireAuthUser();
   const adminDb = createAdminClient();
 
   // 1. Fetch matter & client context
@@ -71,6 +73,7 @@ export async function generateTaxInvoice(matterId: string) {
     .from('matters')
     .select('client_id, title')
     .eq('id', matterId)
+    .eq('firm_id', firmId)
     .single();
 
   if (!matter) return { success: false, error: 'Matter case folder not found.' };
@@ -80,6 +83,7 @@ export async function generateTaxInvoice(matterId: string) {
     .from('time_entries')
     .select('*')
     .eq('matter_id', matterId)
+    .eq('firm_id', firmId)
     .eq('is_billed', false);
 
   if (!entries || entries.length === 0) {
@@ -144,7 +148,7 @@ export async function generateTaxInvoice(matterId: string) {
   // 6. Record audit log
   await adminDb.from('audit_logs').insert({
     firm_id: firmId,
-    user_id: user.id,
+    user_id: userId,
     action: 'GENERATE_TAX_INVOICE',
     resource_type: 'invoice',
     resource_id: invoice.id,

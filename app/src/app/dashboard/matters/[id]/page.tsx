@@ -2,13 +2,14 @@
 
 export const dynamic = 'force-dynamic';
 
-import { useEffect, useState, useTransition, useCallback } from 'react';
+import { useEffect, useState, useTransition, useCallback, use } from 'react';
 import { getMatterDetails } from '@/server/actions/matter.actions';
 import { getMatterTimeline, addTimelineEvent } from '@/server/actions/timeline.actions';
 import { Scale, Clock, Plus, ArrowLeft, Users, History, ShieldAlert } from 'lucide-react';
 import Link from 'next/link';
 
-export default function MatterDetailsPage({ params }: { params: { id: string } }) {
+export default function MatterDetailsPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = use(params);
   const [details, setDetails] = useState<any>(null);
   const [timeline, setTimeline] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -23,16 +24,16 @@ export default function MatterDetailsPage({ params }: { params: { id: string } }
 
   const loadData = useCallback(async () => {
     try {
-      const matDetails = await getMatterDetails(params.id);
+      const matDetails = await getMatterDetails(id);
       setDetails(matDetails);
-      const matTimeline = await getMatterTimeline(params.id);
+      const matTimeline = await getMatterTimeline(id);
       setTimeline(matTimeline);
     } catch (err: any) {
       setError(err.message || 'Failed to load case folder.');
     } finally {
       setIsLoading(false);
     }
-  }, [params.id]);
+  }, [id]);
 
   useEffect(() => {
     loadData();
@@ -45,7 +46,7 @@ export default function MatterDetailsPage({ params }: { params: { id: string } }
 
     startTransition(async () => {
       const res = await addTimelineEvent({
-        matterId: params.id,
+        matterId: id,
         title,
         description,
         eventDate: new Date(eventDate).toISOString(),

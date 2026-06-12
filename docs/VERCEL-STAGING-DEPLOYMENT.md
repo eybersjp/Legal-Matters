@@ -16,9 +16,11 @@ Under the **Environment Variables** section in Vercel, add the following paramet
 
 | Key | Value (Staging Example) | Visibility / Placement |
 | :--- | :--- | :--- |
+| `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` | `pk_test_[REDACTED]` | Public |
+| `CLERK_SECRET_KEY` | `sk_test_[REDACTED]` | **Server-side only** (Uncheck "Expose to Client History") |
 | `NEXT_PUBLIC_SUPABASE_URL` | `https://your-staging-id.supabase.co` | Public |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | `eyJhbGciOiJIUzI1NiIsInR5...` | Public |
-| `SUPABASE_SERVICE_ROLE_KEY` | `eyJhbGciOiJIUzI1NiIsInR5...` | **Server-side only** (Uncheck "Expose to Client History") |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | `eyJ...[REDACTED]` | Public |
+| `SUPABASE_SERVICE_ROLE_KEY` | `eyJ...[REDACTED]` | **Server-side only** (Uncheck "Expose to Client History") |
 | `DATABASE_URL` | `postgresql://postgres:pwd@db.your-id.supabase.co:5432/postgres` | **Server-side only** |
 | `NEXT_PUBLIC_APP_URL` | `https://staging.your-app-domain.vercel.app` | Public |
 | `ENCRYPTION_SECRET_KEY` | `32-character-secure-hex-encryption-key` | **Server-side only** |
@@ -28,9 +30,10 @@ Under the **Environment Variables** section in Vercel, add the following paramet
 | `NEXT_PUBLIC_TEST_MODE` | `false` | **Set strictly to `false`** |
 
 ### ⚠️ Environment Variable Warnings:
-- **Do NOT set `NEXT_PUBLIC_TEST_MODE=true`**: This will bypass authentication and compromise your security posture.
-- **Do NOT expose `SUPABASE_SERVICE_ROLE_KEY` client-side**: This key bypasses all RLS rules and must never be loaded in public browser files.
+- **Do NOT set `NEXT_PUBLIC_TEST_MODE=true`**: This enables mock authentication bypass and compromises your security posture.
+- **Do NOT expose `SUPABASE_SERVICE_ROLE_KEY` or `CLERK_SECRET_KEY` client-side**: Both keys provide privileged API access and must never be loaded in public browser files. Verify neither variable is prefixed with `NEXT_PUBLIC_`.
 - **Do NOT rely on `.env.local` inside Vercel**: All environment variables must be configured directly via the Vercel Dashboard.
+- **Clerk Dashboard must be configured**: After adding Clerk env vars, ensure your Vercel staging URL is registered under **Clerk Dashboard → Sites → Application URLs** to allow redirects and webhooks.
 
 ---
 
@@ -93,9 +96,13 @@ If a staging build completes but breaks critical operations:
 * **Fix**: Run `npm run typecheck` locally to confirm all files compile without warnings before pushing to Git.
 
 ### 2. Middleware Redirect Loops or 404
-* **Cause**: Session verification checks failing due to cookie domain mismatches.
-* **Fix**: Ensure that `NEXT_PUBLIC_APP_URL` exactly matches your Vercel deployment URL.
+* **Cause**: Clerk session cookies not matching the deployed domain.
+* **Fix**: Ensure your Vercel staging URL is added to **Clerk Dashboard → Sites → Application URLs**. Also verify that `NEXT_PUBLIC_APP_URL` matches your Vercel deployment URL exactly.
 
-### 3. RLS Access Denied / empty queries
-* **Cause**: The authenticated user session token is missing custom claims (`firm_id` or `role`).
-* **Fix**: Verify that the user has a linked row in the database `firm_members` table and the claims are properly set in `auth.users.user_metadata`.
+### 3. Clerk Sign-In Returns "Invalid session" or Loops
+* **Cause**: The Clerk publishable/secret key pair doesn't match the staging environment, or the staging URL isn't whitelisted in Clerk Dashboard.
+* **Fix**: Verify `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` and `CLERK_SECRET_KEY` are correctly set in Vercel env vars, and that your staging URL is listed in **Clerk Dashboard → Sites → Application URLs**.
+
+### 4. Empty Dashboard or `firm_id` Not Found
+* **Cause**: The Clerk user was created but no corresponding `firm_members` row exists in the database, or the `firm_members.id` column is still `UUID` (not `TEXT`) and cannot store the Clerk user ID.
+* **Fix**: Confirm that the Clerk auth migration (`20260526000000_clerk_auth_migration.sql`) has been applied to the staging database, changing `firm_members.id` from `UUID` to `TEXT`. Then register a firm through `/register` to create the `firm_members` record.

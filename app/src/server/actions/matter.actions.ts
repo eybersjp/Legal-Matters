@@ -1,16 +1,15 @@
 'use server';
 
-import { createClient, createAdminClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/server';
+import { requireAuthUser } from '@/lib/auth';
 import { CreateMatterSchema } from '@/schemas';
 import { revalidatePath } from 'next/cache';
 
 export async function getMattersList() {
-  const supabase = createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) throw new Error('Unauthenticated user.');
+  const { firmId } = await requireAuthUser();
+  const adminDb = createAdminClient();
 
-  // Retrieves list utilizing RLS (Partners/Associates view all; Ext Counsel views assigned)
-  const { data, error } = await supabase
+  const { data, error } = await adminDb
     .from('matters')
     .select(`
       id,
@@ -25,6 +24,7 @@ export async function getMattersList() {
         company_name
       )
     `)
+    .eq('firm_id', firmId)
     .order('created_at', { ascending: false });
 
   if (error) throw new Error(error.message);
@@ -46,13 +46,10 @@ export async function createMatter(formData: any) {
     return { success: false, error: parsed.error.issues[0].message };
   }
 
-  const supabase = createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return { success: false, error: 'Unauthenticated.' };
+  const { userId, firmId } = await requireAuthUser();
+  const adminDb = createAdminClient();
 
-  const firmId = user.user_metadata?.firm_id;
-
-  const { data, error } = await supabase
+  const { data, error } = await adminDb
     .from('matters')
     .insert({
       firm_id: firmId,
@@ -71,10 +68,9 @@ export async function createMatter(formData: any) {
   }
 
   // Create audit log for case intake
-  const adminDb = createAdminClient();
   await adminDb.from('audit_logs').insert({
     firm_id: firmId,
-    user_id: user.id,
+    user_id: userId,
     action: 'CREATE_MATTER',
     resource_type: 'matter',
     resource_id: data.id,
@@ -85,7 +81,7 @@ export async function createMatter(formData: any) {
   await adminDb.from('matter_team_members').insert({
     firm_id: firmId,
     matter_id: data.id,
-    member_id: user.id,
+    member_id: userId,
   });
 
   revalidatePath('/dashboard/matters');
@@ -93,9 +89,10 @@ export async function createMatter(formData: any) {
 }
 
 export async function getMatterDetails(matterId: string) {
-  const supabase = createClient();
-  
-  const { data: matter, error: matErr } = await supabase
+  const { firmId } = await requireAuthUser();
+  const adminDb = createAdminClient();
+
+  const { data: matter, error: matErr } = await adminDb
     .from('matters')
     .select(`
       *,
@@ -109,11 +106,12 @@ export async function getMatterDetails(matterId: string) {
       )
     `)
     .eq('id', matterId)
+    .eq('firm_id', firmId)
     .single();
 
   if (matErr) throw new Error(matErr.message);
 
-  const { data: team, error: teamErr } = await supabase
+  const { data: team, error: teamErr } = await adminDb
     .from('matter_team_members')
     .select(`
       id,

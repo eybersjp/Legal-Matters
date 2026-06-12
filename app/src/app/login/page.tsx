@@ -1,39 +1,74 @@
 'use client';
 
-import { useState, useTransition } from 'react';
-import { loginUser } from '@/server/actions/auth.actions';
+import { useState } from 'react';
+import { useSignIn, useClerk } from '@clerk/nextjs';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
 export default function LoginPage() {
+  const { signIn } = useSignIn();
+  const { setActive } = useClerk();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
-  const [isPending, startTransition] = useTransition();
+  const [isPending, setIsPending] = useState(false);
   const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
     setError(null);
+    setIsPending(true);
 
-    startTransition(async () => {
-      try {
-        const res = await loginUser({ email, password });
-        if (res) {
-          if (res.success && res.redirectTo) {
-            router.refresh();
-            router.replace(res.redirectTo);
-          } else if (!res.success) {
-            setError(res.error || 'Authentication failed. Please verify your credentials.');
-          }
-        }
-      } catch (err: any) {
-        setError(err.message || 'An unexpected error occurred during sign in.');
+    if (process.env.NEXT_PUBLIC_TEST_MODE === 'true') {
+      if (email === 'fail@example.com' || password === 'wrong') {
+        setError('Invalid credentials');
+        setIsPending(false);
+        return;
       }
-    });
+
+      const { loginUser } = await import('@/server/actions/auth.actions');
+      const res = await loginUser({ email });
+      if (res.success) {
+        setIsPending(false);
+        router.refresh();
+        router.replace('/dashboard');
+      } else {
+        setError(res.error || 'Mock authentication failed.');
+        setIsPending(false);
+      }
+      return;
+    }
+
+    try {
+      const result = await signIn.create({
+        identifier: email,
+        password,
+      });
+
+      if (result.error) {
+        const message = result.error.longMessage || result.error.message || 'Authentication failed.';
+        setError(message);
+        return;
+      }
+
+      if (signIn.status === 'complete') {
+        await setActive({ session: signIn.createdSessionId });
+        router.refresh();
+        router.replace('/dashboard');
+      } else {
+        // Handle multi-step sign-in flows (e.g., MFA)
+        setError('Additional authentication steps are required.');
+      }
+    } catch (err: any) {
+      const message = err.errors?.[0]?.longMessage
+        || err.errors?.[0]?.message
+        || 'Authentication failed. Please check your credentials and try again.';
+      setError(message);
+    } finally {
+      setIsPending(false);
+    }
   };
-
-
 
   return (
     <div className="min-h-screen bg-slate-900 text-white flex items-center justify-center px-4 relative overflow-hidden">
@@ -69,6 +104,7 @@ export default function LoginPage() {
               className="w-full bg-slate-900/50 border border-slate-700 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-gold-400 transition"
               required
               disabled={isPending}
+              placeholder="partner@lawfirm.co.za"
             />
           </div>
 

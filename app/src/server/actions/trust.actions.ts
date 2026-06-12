@@ -1,13 +1,15 @@
 'use server';
 
-import { createClient, createAdminClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/server';
+import { requireAuthUser } from '@/lib/auth';
 import { RecordTrustSchema } from '@/schemas';
 import { revalidatePath } from 'next/cache';
 
 export async function getTrustRecordsList() {
-  const supabase = createClient();
+  const auth = await requireAuthUser();
+  const adminDb = createAdminClient();
 
-  const { data, error } = await supabase
+  const { data, error } = await adminDb
     .from('trust_account_records')
     .select(`
       id,
@@ -34,6 +36,7 @@ export async function getTrustRecordsList() {
         )
       )
     `)
+    .eq('firm_id', auth.firmId)
     .order('created_at', { ascending: false });
 
   if (error) throw new Error(error.message);
@@ -55,8 +58,9 @@ export async function getTrustRecordsList() {
 }
 
 export async function getMattersWithClients() {
-  const supabase = createClient();
-  const { data, error } = await supabase
+  const auth = await requireAuthUser();
+  const adminDb = createAdminClient();
+  const { data, error } = await adminDb
     .from('matters')
     .select(`
       id,
@@ -69,7 +73,8 @@ export async function getMattersWithClients() {
         last_name,
         company_name
       )
-    `);
+    `)
+    .eq('firm_id', auth.firmId);
 
   if (error) throw new Error(error.message);
 
@@ -94,11 +99,7 @@ export async function recordTrustTransaction(formData: {
     return { success: false, error: parsed.error.issues[0].message };
   }
 
-  const supabase = createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return { success: false, error: 'Unauthenticated.' };
-
-  const firmId = user.user_metadata?.firm_id;
+  const auth = await requireAuthUser();
   const adminDb = createAdminClient();
 
   // Generate unique Section 86 trust reference number
@@ -107,14 +108,14 @@ export async function recordTrustTransaction(formData: {
   const { data: record, error } = await adminDb
     .from('trust_account_records')
     .insert({
-      firm_id: firmId,
+      firm_id: auth.firmId,
       client_id: parsed.data.client_id,
       matter_id: parsed.data.matter_id,
       reference_number: refNumber,
       trust_ledger_balance: parsed.data.amount,
       section_86_type: parsed.data.section_86_type,
       description: parsed.data.description,
-      recorded_by: user.id,
+      recorded_by: auth.userId,
     })
     .select('id')
     .single();
@@ -125,8 +126,8 @@ export async function recordTrustTransaction(formData: {
 
   // Audit this critical financial metadata action (LPC regulatory requirement)
   await adminDb.from('audit_logs').insert({
-    firm_id: firmId,
-    user_id: user.id,
+    firm_id: auth.firmId,
+    user_id: auth.userId,
     action: 'RECORD_TRUST_METADATA',
     resource_type: 'trust_account_records',
     resource_id: record.id,

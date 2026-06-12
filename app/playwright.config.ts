@@ -1,14 +1,17 @@
 import { defineConfig, devices } from '@playwright/test';
 
+const E2E_PORT = 3333;
+const E2E_BASE_URL = `http://localhost:${E2E_PORT}`;
+
 export default defineConfig({
   testDir: './playwright/tests',
-  fullyParallel: true,
+  fullyParallel: false,
   forbidOnly: !!process.env.CI,
-  retries: process.env.CI ? 2 : 0,
-  workers: process.env.CI ? 1 : undefined,
+  retries: 2,
+  workers: 1,
   reporter: 'html',
   use: {
-    baseURL: 'http://localhost:3001',
+    baseURL: E2E_BASE_URL,
     trace: 'on-first-retry',
   },
   projects: [
@@ -19,11 +22,13 @@ export default defineConfig({
   ],
   webServer: {
     command: 'npm run dev',
-    url: 'http://localhost:3001',
+    url: E2E_BASE_URL,
     reuseExistingServer: false, // force clean start
     env: {
       NEXT_PUBLIC_TEST_MODE: 'true',
-      PORT: '3001',
+      PORT: String(E2E_PORT),
+      NEXT_PUBLIC_CLERK_SIGN_IN_URL: '/login',
+      NEXT_PUBLIC_CLERK_SIGN_UP_URL: '/register',
     }
   },
 });

@@ -1,17 +1,18 @@
 'use server';
 
-import { createClient, createAdminClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/server';
+import { requireAuthUser } from '@/lib/auth';
 import { CreateClientSchema } from '@/schemas';
 import { revalidatePath } from 'next/cache';
 
 export async function getClientsList() {
-  const supabase = createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) throw new Error('Unauthenticated user.');
+  const { firmId } = await requireAuthUser();
+  const adminDb = createAdminClient();
 
-  const { data, error } = await supabase
+  const { data, error } = await adminDb
     .from('clients')
     .select('*')
+    .eq('firm_id', firmId)
     .order('created_at', { ascending: false });
 
   if (error) throw new Error(error.message);
@@ -20,25 +21,22 @@ export async function getClientsList() {
 }
 
 export async function getClientDetails(clientId: string) {
-  const supabase = createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) throw new Error('Unauthenticated.');
+  const { userId, firmId } = await requireAuthUser();
+  const adminDb = createAdminClient();
 
-  // Fetch client details (scoped by user's firm via RLS)
-  const { data: client, error } = await supabase
+  const { data: client, error } = await adminDb
     .from('clients')
     .select('*')
     .eq('id', clientId)
+    .eq('firm_id', firmId)
     .single();
 
   if (error) throw new Error(error.message);
 
   // Write read audit log for PII access (POPIA statutory mandate)
-  const firmId = user.user_metadata?.firm_id;
-  const adminDb = createAdminClient();
   await adminDb.from('audit_logs').insert({
     firm_id: firmId,
-    user_id: user.id,
+    user_id: userId,
     action: 'READ_PII',
     resource_type: 'client',
     resource_id: clientId,
@@ -57,13 +55,10 @@ export async function addClient(formData: any) {
     return { success: false, error: parsed.error.issues[0].message };
   }
 
-  const supabase = createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return { success: false, error: 'Unauthenticated.' };
+  const { userId, firmId } = await requireAuthUser();
+  const adminDb = createAdminClient();
 
-  const firmId = user.user_metadata?.firm_id;
-
-  const { data, error } = await supabase
+  const { data, error } = await adminDb
     .from('clients')
     .insert({
       firm_id: firmId,
@@ -85,10 +80,9 @@ export async function addClient(formData: any) {
   }
 
   // Create audit log for PII modification
-  const adminDb = createAdminClient();
   await adminDb.from('audit_logs').insert({
     firm_id: firmId,
-    user_id: user.id,
+    user_id: userId,
     action: 'CREATE_CLIENT_PII',
     resource_type: 'client',
     resource_id: data.id,

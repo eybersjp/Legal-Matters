@@ -1,17 +1,17 @@
 'use server';
 
-import { createClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/server';
+import { requireAuthUser } from '@/lib/auth';
 import { revalidatePath } from 'next/cache';
 
 export async function getNotificationsList() {
-  const supabase = createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return [];
+  const auth = await requireAuthUser();
+  const adminDb = createAdminClient();
 
-  const { data, error } = await supabase
+  const { data, error } = await adminDb
     .from('notifications')
     .select('*')
-    .eq('recipient_id', user.id)
+    .eq('recipient_id', auth.userId)
     .order('created_at', { ascending: false });
 
   if (error) {
@@ -23,15 +23,14 @@ export async function getNotificationsList() {
 }
 
 export async function markNotificationAsRead(id: string) {
-  const supabase = createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return { success: false, error: 'Unauthenticated.' };
+  const auth = await requireAuthUser();
+  const adminDb = createAdminClient();
 
-  const { error } = await supabase
+  const { error } = await adminDb
     .from('notifications')
     .update({ is_read: true })
     .eq('id', id)
-    .eq('recipient_id', user.id);
+    .eq('recipient_id', auth.userId);
 
   if (error) {
     return { success: false, error: error.message };
@@ -42,14 +41,13 @@ export async function markNotificationAsRead(id: string) {
 }
 
 export async function markAllNotificationsAsRead() {
-  const supabase = createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return { success: false, error: 'Unauthenticated.' };
+  const auth = await requireAuthUser();
+  const adminDb = createAdminClient();
 
-  const { error } = await supabase
+  const { error } = await adminDb
     .from('notifications')
     .update({ is_read: true })
-    .eq('recipient_id', user.id);
+    .eq('recipient_id', auth.userId);
 
   if (error) {
     return { success: false, error: error.message };

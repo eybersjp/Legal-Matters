@@ -1,0 +1,26 @@
+# Legal Matters - AI Developer Rules (.cursorrules)
+
+Refer to [CLAUDE.md](file:///c:/Users/SSTECH/developments/legal-matters/CLAUDE.md) for the master source of truth.
+
+## Tech Stack
+- Frontend: Next.js 15+ (App Router), React 18, Tailwind CSS v3
+- Database: Supabase (PostgreSQL 14+)
+- Authentication: Clerk (`@clerk/nextjs` v7+)
+- Validation: Zod (runtime validation)
+- Testing: Vitest (unit/integration) and Playwright (E2E)
+
+## Core Directives
+1. **No Client-side Direct Supabase Access**: Client-side queries/mutations to Supabase are strictly blocked. All data access must go through Next.js Server Actions or server API routes using `createAdminClient()`.
+2. **Strict Multi-Tenant Scoping**: Always call `requireAuthUser()` to get the user's `firmId` and role, then explicitly filter all queries with `.eq('firm_id', auth.firmId)`. Never trust a client-supplied `firm_id`.
+3. **Audit Logging**: Write structured entries to the `audit_logs` table for any data access mutations or PII lookups.
+4. **File Path Sanitization**: Save files in private Supabase Storage buckets using `${firm_id}/${matter_id}/${uuid}${extension}`. Never use original filenames in storage paths. Maximum file size is 5 MB.
+5. **POPIA Compliance**: Ensure proper consent validation (`popia_consents` table) before handling any client Personal Identifiable Information (PII).
+
+## Commands
+- Dev: `npm --prefix app run dev`
+- Build: `npm --prefix app run build`
+- Typecheck: `npm --prefix app run typecheck`
+- Lint: `npm --prefix app run lint`
+- Vitest: `npm --prefix app run test:run`
+- Playwright E2E: `npm --prefix app run test:e2e` (Port 3333)
+- DB RLS Test: `npm --prefix app run test:db`

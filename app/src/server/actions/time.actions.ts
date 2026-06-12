@@ -1,13 +1,15 @@
 'use server';
 
-import { createClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/server';
+import { requireAuthUser } from '@/lib/auth';
 import { CreateTimeEntrySchema } from '@/schemas';
 import { revalidatePath } from 'next/cache';
 
 export async function getTimeEntriesList() {
-  const supabase = createClient();
+  const auth = await requireAuthUser();
+  const adminDb = createAdminClient();
 
-  const { data, error } = await supabase
+  const { data, error } = await adminDb
     .from('time_entries')
     .select(`
       id,
@@ -28,6 +30,7 @@ export async function getTimeEntriesList() {
         )
       )
     `)
+    .eq('firm_id', auth.firmId)
     .order('created_at', { ascending: false });
 
   if (error) throw new Error(error.message);
@@ -53,18 +56,15 @@ export async function recordTimeEntry(formData: any) {
     return { success: false, error: parsed.error.issues[0].message };
   }
 
-  const supabase = createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return { success: false, error: 'Unauthenticated.' };
+  const auth = await requireAuthUser();
+  const adminDb = createAdminClient();
 
-  const firmId = user.user_metadata?.firm_id;
-
-  const { error } = await supabase
+  const { error } = await adminDb
     .from('time_entries')
     .insert({
-      firm_id: firmId,
+      firm_id: auth.firmId,
       matter_id: parsed.data.matter_id,
-      member_id: user.id,
+      member_id: auth.userId,
       duration_minutes: parsed.data.duration_minutes,
       hourly_rate_zar: parsed.data.hourly_rate_zar,
       description: parsed.data.description,

@@ -1,15 +1,17 @@
 'use server';
 
-import { createClient, createAdminClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/server';
+import { requireAuthUser } from '@/lib/auth';
 
 export async function getDashboardStats() {
-  const supabase = createClient();
+  const auth = await requireAuthUser();
+  const adminDb = createAdminClient();
   
-  // 1. Fetch counts (scoped by RLS automatically)
-  const { data: matters } = await supabase.from('matters').select('id');
-  const { data: clients } = await supabase.from('clients').select('id');
-  const { data: timeEntries } = await supabase.from('time_entries').select('duration_minutes, hourly_rate_zar');
-  const { data: trust } = await supabase.from('trust_account_records').select('trust_ledger_balance');
+  // 1. Fetch counts (scoped by firm_id)
+  const { data: matters } = await adminDb.from('matters').select('id').eq('firm_id', auth.firmId);
+  const { data: clients } = await adminDb.from('clients').select('id').eq('firm_id', auth.firmId);
+  const { data: timeEntries } = await adminDb.from('time_entries').select('duration_minutes, hourly_rate_zar').eq('firm_id', auth.firmId);
+  const { data: trust } = await adminDb.from('trust_account_records').select('trust_ledger_balance').eq('firm_id', auth.firmId);
 
   const totalMatters = matters?.length || 0;
   const totalClients = clients?.length || 0;
@@ -32,9 +34,10 @@ export async function getDashboardStats() {
 }
 
 export async function getUpcomingDeadlines() {
-  const supabase = createClient();
+  const auth = await requireAuthUser();
+  const adminDb = createAdminClient();
 
-  const { data, error } = await supabase
+  const { data, error } = await adminDb
     .from('matter_deadlines')
     .select(`
       id,
@@ -46,6 +49,7 @@ export async function getUpcomingDeadlines() {
         case_number
       )
     `)
+    .eq('firm_id', auth.firmId)
     .gte('calculated_deadline', new Date().toISOString())
     .order('calculated_deadline', { ascending: true })
     .limit(5);
@@ -62,12 +66,9 @@ export async function getUpcomingDeadlines() {
 }
 
 export async function getRecentAuditLogs() {
-  const supabase = createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) throw new Error('Unauthenticated.');
-
-  // RLS allows viewing of own firm's audit logs. We use admin client to resolve profile name cleanly.
+  const auth = await requireAuthUser();
   const adminDb = createAdminClient();
+
   const { data, error } = await adminDb
     .from('audit_logs')
     .select(`
@@ -77,7 +78,7 @@ export async function getRecentAuditLogs() {
       created_at,
       user_id
     `)
-    .eq('firm_id', user.user_metadata?.firm_id)
+    .eq('firm_id', auth.firmId)
     .order('created_at', { ascending: false })
     .limit(5);
 

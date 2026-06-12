@@ -11,10 +11,11 @@ import {
   togglePortalPOPIAConsent,
   getPortalDocumentDownloadUrl 
 } from '@/server/actions/portal.actions';
-import { logoutUser } from '@/server/actions/auth.actions';
+import { useClerk } from '@clerk/nextjs';
 import { Scale, FileText, Receipt, ShieldCheck, LogOut, Download, AlertCircle, FileCheck, Lock } from 'lucide-react';
 
 export default function ClientPortalDashboard() {
+  const { signOut } = useClerk();
   const [matters, setMatters] = useState<any[]>([]);
   const [invoices, setInvoices] = useState<any[]>([]);
   const [popiaConsent, setPopiaConsent] = useState<any>(null);
@@ -120,7 +121,7 @@ export default function ClientPortalDashboard() {
         </div>
 
         <button
-          onClick={() => logoutUser()}
+          onClick={() => signOut({ redirectUrl: '/' })}
           className="flex items-center gap-2 text-xs font-bold text-red-400 hover:text-red-300 bg-red-500/10 px-3.5 py-2 rounded-lg border border-red-500/20 transition"
         >
           <LogOut className="h-4.5 w-4.5" />

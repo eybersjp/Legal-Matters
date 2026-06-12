@@ -1,11 +1,14 @@
 'use client';
 
-import { useState, useTransition } from 'react';
-import { registerFirm } from '@/server/actions/auth.actions';
-import Link from 'next/link';
+import { useState } from 'react';
+import { useSignUp, useClerk } from '@clerk/nextjs';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import { registerFirm } from '@/server/actions/auth.actions';
 
 export default function RegisterPage() {
+  const { signUp } = useSignUp();
+  const { setActive } = useClerk();
   const [firmName, setFirmName] = useState('');
   const [lpcNumber, setLpcNumber] = useState('');
   const [firstName, setFirstName] = useState('');
@@ -13,39 +16,74 @@ export default function RegisterPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
-  const [isPending, startTransition] = useTransition();
+  const [isPending, setIsPending] = useState(false);
   const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
     setError(null);
+    setIsPending(true);
 
-    startTransition(async () => {
-      try {
-        const res = await registerFirm({
-          email,
-          password,
-          firstName,
-          lastName,
-          firmName,
-          lpcNumber,
-          role: 'Partner',
-        });
-        if (res) {
-          if (res.success && res.redirectTo) {
-            router.refresh();
-            router.replace(res.redirectTo);
-          } else if (!res.success) {
-            setError(res.error || 'Registration failed. LPC Practising Number might already be linked.');
-          }
-        }
-      } catch (err: any) {
-        setError(err.message || 'An unexpected error occurred during registration.');
+    try {
+      // Step 1: Create user in Clerk
+      const result = await signUp.create({
+        emailAddress: email,
+        password,
+        firstName,
+        lastName,
+      });
+
+      if (result.error) {
+        const message = result.error.longMessage || result.error.message || 'Registration failed.';
+        setError(message);
+        return;
       }
-    });
+
+      if (signUp.status !== 'complete') {
+        // Handle email verification if needed
+        setError('Email verification may be required. Please check your inbox.');
+        setIsPending(false);
+        return;
+      }
+
+      // Step 2: Activate the session
+      await setActive({ session: signUp.createdSessionId });
+
+      // Step 3: Create firm and member records in Supabase
+      const clerkUserId = signUp.createdUserId;
+      if (!clerkUserId) {
+        throw new Error('User ID not returned from Clerk.');
+      }
+
+      const res = await registerFirm({
+        clerkUserId,
+        email,
+        firmName,
+        lpcNumber,
+        firstName,
+        lastName,
+        role: 'Partner',
+      });
+
+      if (!res.success) {
+        setError(res.error || 'Firm registration failed. Please contact support.');
+        return;
+      }
+
+      // Step 4: Redirect to dashboard
+      router.refresh();
+      router.replace('/dashboard');
+    } catch (err: any) {
+      const message = err.errors?.[0]?.longMessage
+        || err.errors?.[0]?.message
+        || err.message
+        || 'Registration failed. Please verify your details and try again.';
+      setError(message);
+    } finally {
+      setIsPending(false);
+    }
   };
-
-
 
   return (
     <div className="min-h-screen bg-slate-900 text-white flex items-center justify-center py-12 px-4 relative overflow-hidden">
@@ -149,7 +187,7 @@ export default function RegisterPage() {
 
             <div>
               <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">
-                Master Password (min 12 chars)
+                Master Password (min 8 chars)
               </label>
               <input
                 type="password"
@@ -158,6 +196,7 @@ export default function RegisterPage() {
                 className="w-full bg-slate-900/50 border border-slate-700 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-gold-400 transition"
                 required
                 disabled={isPending}
+                minLength={8}
               />
             </div>
           </div>

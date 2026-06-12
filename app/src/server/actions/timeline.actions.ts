@@ -1,12 +1,14 @@
 'use server';
 
-import { createClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/server';
+import { requireAuthUser } from '@/lib/auth';
 import { revalidatePath } from 'next/cache';
 
 export async function getMatterTimeline(matterId: string) {
-  const supabase = createClient();
+  const auth = await requireAuthUser();
+  const adminDb = createAdminClient();
 
-  const { data, error } = await supabase
+  const { data, error } = await adminDb
     .from('matter_events')
     .select(`
       id,
@@ -22,6 +24,7 @@ export async function getMatterTimeline(matterId: string) {
       )
     `)
     .eq('matter_id', matterId)
+    .eq('firm_id', auth.firmId)
     .order('event_date', { ascending: false });
 
   if (error) throw new Error(error.message);
@@ -44,21 +47,18 @@ export async function addTimelineEvent(formData: {
   description?: string;
   eventDate: string;
 }) {
-  const supabase = createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return { success: false, error: 'Unauthenticated.' };
+  const auth = await requireAuthUser();
+  const adminDb = createAdminClient();
 
-  const firmId = user.user_metadata?.firm_id;
-
-  const { error } = await supabase
+  const { error } = await adminDb
     .from('matter_events')
     .insert({
-      firm_id: firmId,
+      firm_id: auth.firmId,
       matter_id: formData.matterId,
       title: formData.title,
       description: formData.description || null,
       event_date: formData.eventDate,
-      created_by: user.id,
+      created_by: auth.userId,
     });
 
   if (error) {

@@ -2,13 +2,14 @@
 
 export const dynamic = 'force-dynamic';
 
-import { useEffect, useState, useTransition, useCallback } from 'react';
+import { useEffect, useState, useTransition, useCallback, use } from 'react';
 import { getClientPopiaConsent, updateClientPopiaConsent } from '@/server/actions/popia.actions';
 import { getClientDetails } from '@/server/actions/client.actions';
 import { ShieldCheck, Mail, Phone, Scale, ShieldAlert, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 
-export default function ClientProfilePage({ params }: { params: { id: string } }) {
+export default function ClientProfilePage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = use(params);
   const [client, setClient] = useState<any>(null);
   const [consent, setConsent] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -22,10 +23,10 @@ export default function ClientProfilePage({ params }: { params: { id: string } }
 
   const loadData = useCallback(async () => {
     try {
-      const c = await getClientDetails(params.id);
+      const c = await getClientDetails(id);
       setClient(c);
 
-      const popia = await getClientPopiaConsent(params.id);
+      const popia = await getClientPopiaConsent(id);
       if (popia) {
         setConsent(popia);
         setConsented(popia.consented_to_processing);
@@ -36,7 +37,7 @@ export default function ClientProfilePage({ params }: { params: { id: string } }
     } finally {
       setIsLoading(false);
     }
-  }, [params.id]);
+  }, [id]);
 
   useEffect(() => {
     loadData();
@@ -49,7 +50,7 @@ export default function ClientProfilePage({ params }: { params: { id: string } }
     setSuccess(null);
 
     startTransition(async () => {
-      const res = await updateClientPopiaConsent(params.id, {
+      const res = await updateClientPopiaConsent(id, {
         consentedToProcessing: consented,
         consentedChannels: channels,
       });

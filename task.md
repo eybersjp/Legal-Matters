@@ -1,0 +1,30 @@
+# Checklist: Clerk Hardening & Playwright Port Updates
+
+- [x] **PHASE 1: Playwright E2E Port Fix**
+  - [x] Modify `app/playwright.config.ts` to use port `3333` with clear constants.
+  - [x] Modify `app/playwright/tests/app.spec.ts` to replace `localhost:3001` with `localhost:3333` in cookie-seeding calls.
+- [x] **PHASE 2: Application-Layer Tenant Isolation Fixes**
+  - [x] Scopes queries in `app/src/server/actions/trust.actions.ts`:
+    - [x] `getTrustRecordsList` scoped by authenticated user's `firm_id`.
+    - [x] `getMattersWithClients` scoped by authenticated user's `firm_id`.
+  - [x] Scope `getMatterDocuments` in `app/src/server/actions/document.actions.ts` by authenticated user's `firm_id`.
+  - [x] Scope `getUpcomingDeadlines` in `app/src/server/actions/dashboard.actions.ts` by authenticated user's `firm_id`.
+  - [x] Scope queries in `app/src/server/actions/popia.actions.ts`:
+    - [x] `getClientPopiaConsent` scoped by authenticated user's `firm_id`.
+    - [x] `updateClientPopiaConsent` verifies existing record/client belongs to authenticated user's firm.
+  - [x] Scope and secure `getSystemAuditLogs` in `app/src/server/actions/audit.actions.ts` by `firm_id` and map names from `user_profiles` safely.
+- [x] **PHASE 3: Clerk Migration Review (Conservative Database Changes)**
+  - [x] Review `app/supabase/migrations/20260526000000_clerk_auth_migration.sql`.
+  - [x] Check TEXT user IDs, `firm_members` references, and ensure no active foreign keys to Supabase auth.users remain.
+  - [x] Ensure RLS is not modified unless Clerk-Supabase JWT RLS integration is verified.
+- [x] **PHASE 4: RLS Documentation**
+  - [x] Create/update `docs/CLERK-RLS-REVIEW.md` outlining the RLS findings, risks, and recommendations.
+- [x] **PHASE 5: Audit Logging Review**
+  - [x] Review audit log gaps and log them.
+- [x] **PHASE 6: Staging Hardening Report**
+  - [x] Create `docs/CLERK-STAGING-HARDENING-REPORT.md` summarizing files changed, tests run, recommendations, and staging readiness.
+- [x] **PHASE 7: Validation**
+  - [x] Run typecheck: `npm run typecheck`
+  - [x] Run unit tests: `npm run test:run`
+  - [x] Run E2E tests: `npm run test:e2e`
+  - [x] Verify git status and diff.

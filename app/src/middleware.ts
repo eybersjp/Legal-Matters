@@ -1,19 +1,35 @@
-import { type NextRequest } from 'next/server';
-import { updateSession } from '@/lib/supabase/middleware';
+import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server'
+import { NextResponse } from 'next/server'
 
-export async function middleware(request: NextRequest) {
-  return await updateSession(request);
-}
+const isProtectedRoute = createRouteMatcher([
+  '/dashboard(.*)',
+  '/portal(.*)',
+])
+
+export default clerkMiddleware(async (auth, req) => {
+  if (process.env.NEXT_PUBLIC_TEST_MODE === 'true' && process.env.NODE_ENV !== 'production') {
+    const isAuthenticated = req.cookies.get('mock-authenticated')?.value === 'true';
+    if (isAuthenticated) {
+      return NextResponse.next();
+    }
+    if (isProtectedRoute(req)) {
+      const url = req.nextUrl.clone();
+      url.pathname = '/login';
+      return NextResponse.redirect(url);
+    }
+    return NextResponse.next();
+  }
+
+  if (isProtectedRoute(req)) {
+    auth.protect()
+  }
+  return NextResponse.next();
+})
 
 export const config = {
   matcher: [
-    /*
-     * Match all request paths except for the ones starting with:
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     * Feel free to modify this pattern to include more paths.
-     */
-    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+    '/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)',
+    '/(api|trpc)(.*)',
+    '/__clerk/(.*)',
   ],
-};
+}

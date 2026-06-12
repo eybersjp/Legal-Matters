@@ -1,19 +1,18 @@
 'use server';
 
-import { createClient, createAdminClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/server';
+import { requireAuthUser } from '@/lib/auth';
 import { revalidatePath } from 'next/cache';
 
 // Helper to resolve the active client context for the authenticated portal user
 export async function getPortalClientContext() {
-  const supabase = createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return null;
+  const { userId } = await requireAuthUser();
 
   const adminDb = createAdminClient();
   const { data: portalAccess, error } = await adminDb
     .from('client_portal_access')
     .select('client_id, firm_id, is_enabled')
-    .eq('portal_user_id', user.id)
+    .eq('portal_user_id', userId)
     .single();
 
   if (error || !portalAccess || !portalAccess.is_enabled) {
@@ -24,12 +23,12 @@ export async function getPortalClientContext() {
   await adminDb
     .from('client_portal_access')
     .update({ last_accessed_at: new Date().toISOString() })
-    .eq('portal_user_id', user.id);
+    .eq('portal_user_id', userId);
 
   return {
     clientId: portalAccess.client_id,
     firmId: portalAccess.firm_id,
-    userId: user.id,
+    userId,
   };
 }
 

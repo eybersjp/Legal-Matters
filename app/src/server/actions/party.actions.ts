@@ -1,16 +1,17 @@
 'use server';
 
-import { createClient, createAdminClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/server';
+import { requireAuthUser } from '@/lib/auth';
 import { revalidatePath } from 'next/cache';
 
 export async function getPartiesList() {
-  const supabase = createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) throw new Error('Unauthenticated user.');
+  const auth = await requireAuthUser();
+  const adminDb = createAdminClient();
 
-  const { data, error } = await supabase
+  const { data, error } = await adminDb
     .from('parties')
     .select('*')
+    .eq('firm_id', auth.firmId)
     .order('created_at', { ascending: false });
 
   if (error) throw new Error(error.message);
@@ -27,13 +28,7 @@ export async function addParty(formData: {
   email?: string;
   phone_number?: string;
 }) {
-  const supabase = createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return { success: false, error: 'Unauthenticated.' };
-
-  const firmId = user.user_metadata?.firm_id;
-
-  // 1. CONFLICT CHECK: Verify if this party's ID number or email exists in our current Client database
+  const auth = await requireAuthUser();
   const adminDb = createAdminClient();
   
   if (formData.sa_id_number) {
@@ -41,7 +36,7 @@ export async function addParty(formData: {
       .from('clients')
       .select('id, first_name, last_name, company_name')
       .eq('sa_id_number', formData.sa_id_number)
-      .eq('firm_id', firmId)
+      .eq('firm_id', auth.firmId)
       .maybeSingle();
 
     if (conflictClient) {
@@ -55,10 +50,10 @@ export async function addParty(formData: {
   }
 
   // 2. Insert Party record
-  const { error } = await supabase
+  const { error } = await adminDb
     .from('parties')
     .insert({
-      firm_id: firmId,
+      firm_id: auth.firmId,
       type: formData.type,
       company_name: formData.company_name || null,
       first_name: formData.first_name || null,
@@ -74,8 +69,8 @@ export async function addParty(formData: {
 
   // Create audit log
   await adminDb.from('audit_logs').insert({
-    firm_id: firmId,
-    user_id: user.id,
+    firm_id: auth.firmId,
+    user_id: auth.userId,
     action: 'CREATE_PARTY_RECORD',
     resource_type: 'party',
     resource_id: '00000000-0000-0000-0000-000000000000', // standard fallback UUID

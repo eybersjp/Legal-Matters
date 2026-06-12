@@ -31,6 +31,9 @@ Deploy the database schema, multi-tenancy configurations, and row-level security
    - **1st**: Copy the entire contents of [`20260525000000_init_schemas.sql`](file:///c:/Users/SSTECH/developments/legal-matters/app/supabase/migrations/20260525000000_init_schemas.sql) and paste it into the editor. Click **Run**.
    - **2nd**: Copy the contents of [`20260525000001_enable_rls.sql`](file:///c:/Users/SSTECH/developments/legal-matters/app/supabase/migrations/20260525000001_enable_rls.sql) (attaches RLS rules and active firm boundaries). Click **Run**.
    - **3rd**: Copy [`20260525000002_audit_triggers.sql`](file:///c:/Users/SSTECH/developments/legal-matters/app/supabase/migrations/20260525000002_audit_triggers.sql) and run it.
+   - **4th**: Copy [`20260526000000_clerk_auth_migration.sql`](file:///c:/Users/SSTECH/developments/legal-matters/app/supabase/migrations/20260526000000_clerk_auth_migration.sql) and run it.
+
+> **What the Clerk migration does:** Changes `firm_members.id` and all 12 child-table FK columns from `UUID` to `TEXT` to store Clerk user IDs (e.g. `user_2abc123`). Drops and re-creates all RLS policies with `auth.uid()::TEXT` comparisons for Clerk compatibility. Drops FK references to `auth.users` (not applicable with Clerk). This migration must be run **after** the RLS and audit trigger migrations.
 
 ---
 
@@ -65,13 +68,15 @@ To prevent unauthorized access to uploaded files, add policies under **Storage**
 ---
 
 ## 👥 Step 5: Provision Staging Onboarding & Admin
+
+> **Note:** User authentication is now handled by **Clerk**. The Clerk sign-up flow replaces the custom registration form. After Clerk verifies the user, the `registerFirm` server action creates the firm record, `firm_members` entry (with the Clerk user ID), `user_profiles` row, and audit logs.
+
 To onboard your first firm account on staging:
 1. Navigate to the deployed staging application route: `/register`.
-2. Fill in the **Practice Registration** form:
-   - Enter your firm's name.
-   - Enter your South African Legal Practice Council registration number (LPC number).
-   - Provide your administrative email and password.
-3. Click **Finalize Practice Registration** to automatically create the isolated Firm, Partner profile, and associated audit logs.
+2. Complete the **Clerk-hosted sign-up form** — enter your name, email, and password.
+3. After Clerk creates the user, the on-screen **Firm Registration** form will appear — enter your firm's name and South African Legal Practice Council (LPC) practising number.
+4. Click **Finalise Practice Registration** to trigger the `registerFirm` server action, which creates the isolated firm, partner profile, and audit logs.
+5. Verify the new user appears in [Clerk Dashboard → Users](https://dashboard.clerk.com).
 
 ---
 
@@ -121,4 +126,21 @@ WHERE schemaname = 'public';
 
 ### 4. Auth Redirect Loop
 * **Symptom**: Infinite redirections between `/login` and `/dashboard`.
-* **Fix**: Confirm that you are not setting `NEXT_PUBLIC_TEST_MODE=true` on staging, as this will conflict with the real cookie tokens handled by Next.js middleware.
+* **Fix**: Confirm that you are not setting `NEXT_PUBLIC_TEST_MODE=true` on staging, as this will conflict with session cookies. Also verify your staging URL is registered in **Clerk Dashboard → Sites → Application URLs**.
+
+### 5. Clerk Migration Not Applied (firm_members.id is still UUID)
+* **Symptom**: After registering, the dashboard is empty or server actions return errors about mismatched ID types.
+* **Fix**: Confirm that the Clerk auth migration (`20260526000000_clerk_auth_migration.sql`) has been executed. Run this verification query in the SQL Editor:
+  ```sql
+  SELECT data_type FROM information_schema.columns 
+  WHERE table_name = 'firm_members' AND column_name = 'id';
+  -- Expected: 'text' (not 'uuid')
+  ```
+
+### 6. Firm Registration Succeeds but Dashboard Shows "No Workspace"
+* **Symptom**: Registration completes but the login redirects back to an error about no firm workspace.
+* **Fix**: Check that the `firm_members` table has a row for the Clerk user ID. Run:
+  ```sql
+  SELECT * FROM firm_members WHERE id = 'user_2...';
+  ```
+  If no row exists, re-register or manually insert the mapping.

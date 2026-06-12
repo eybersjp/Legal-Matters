@@ -1,6 +1,7 @@
 'use server';
 
-import { createClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/server';
+import { requireAuthUser } from '@/lib/auth';
 import { calculateCourtDeadline } from '@/lib/court-days/calculator';
 import { revalidatePath } from 'next/cache';
 
@@ -22,18 +23,21 @@ const saPublicHolidays2026 = [
 ];
 
 export async function getMattersForDropdown() {
-  const supabase = createClient();
-  const { data, error } = await supabase
+  const auth = await requireAuthUser();
+  const adminDb = createAdminClient();
+  const { data, error } = await adminDb
     .from('matters')
-    .select('id, title, case_number');
+    .select('id, title, case_number')
+    .eq('firm_id', auth.firmId);
 
   if (error) throw new Error(error.message);
   return data;
 }
 
 export async function getDeadlinesList() {
-  const supabase = createClient();
-  const { data, error } = await supabase
+  const auth = await requireAuthUser();
+  const adminDb = createAdminClient();
+  const { data, error } = await adminDb
     .from('matter_deadlines')
     .select(`
       id,
@@ -48,6 +52,7 @@ export async function getDeadlinesList() {
         case_number
       )
     `)
+    .eq('firm_id', auth.firmId)
     .order('calculated_deadline', { ascending: true });
 
   if (error) throw new Error(error.message);
@@ -61,11 +66,10 @@ export async function createCourtDeadline(formData: {
   triggerDate: string;
   courtDaysCount: number;
 }) {
-  const supabase = createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return { success: false, error: 'Unauthenticated.' };
+  const auth = await requireAuthUser();
+  const adminDb = createAdminClient();
 
-  const firmId = user.user_metadata?.firm_id;
+  const firmId = auth.firmId;
 
   // 1. Calculate deadline using the court days utility skipping weekends & 2026 holidays
   const trigger = new Date(formData.triggerDate);
@@ -76,7 +80,7 @@ export async function createCourtDeadline(formData: {
   );
 
   // 2. Insert into matter_deadlines
-  const { error } = await supabase
+  const { error } = await adminDb
     .from('matter_deadlines')
     .insert({
       firm_id: firmId,
@@ -93,7 +97,7 @@ export async function createCourtDeadline(formData: {
   }
 
   // 3. Create implicit matter timeline event
-  await supabase.from('matter_events').insert({
+  await adminDb.from('matter_events').insert({
     firm_id: firmId,
     matter_id: formData.matterId,
     title: `Deadline Scheduled: ${formData.title}`,
