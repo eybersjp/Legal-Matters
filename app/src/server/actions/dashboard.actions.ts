@@ -91,8 +91,9 @@ export async function getRecentAuditLogs() {
   if (userIds.length > 0) {
     const { data: profiles } = await adminDb
       .from('user_profiles')
-      .select('first_name, last_name, firm_members!inner(id)')
-      .in('firm_members.id', userIds);
+      .select('first_name, last_name, firm_members!inner(id, firm_id)')
+      .in('firm_members.id', userIds)
+      .eq('firm_members.firm_id', auth.firmId);
 
     profiles?.forEach((p: any) => {
       profilesMap[p.firm_members.id] = `${p.first_name} ${p.last_name}`;

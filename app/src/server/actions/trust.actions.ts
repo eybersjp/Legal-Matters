@@ -102,6 +102,18 @@ export async function recordTrustTransaction(formData: {
   const auth = await requireAuthUser();
   const adminDb = createAdminClient();
 
+  // Validate that the matter and client belong to the authenticated user's firm
+  const { data: matter, error: matterError } = await adminDb
+    .from('matters')
+    .select('id, firm_id, client_id')
+    .eq('id', parsed.data.matter_id)
+    .eq('firm_id', auth.firmId)
+    .single();
+
+  if (matterError || !matter || matter.client_id !== parsed.data.client_id) {
+    return { success: false, error: 'Access denied: Matter/Client not found or firm mismatch.' };
+  }
+
   // Generate unique Section 86 trust reference number
   const refNumber = `TR-${parsed.data.section_86_type.replace('(', '').replace(')', '')}-${Date.now().toString().slice(-6)}`;
 
