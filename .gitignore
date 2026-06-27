@@ -29,4 +29,12 @@ app/playwright/.cache/
 .DS_Store
 Thumbs.db
 
+# Debug/exploratory scripts (one-off investigation tools)
+app/scripts/find-*.js
+app/scripts/search-*.js
+app/scripts/inspect-*.js
+app/scripts/restore-from-transcript.js
+app/scripts/test-clerk-*.js
+app/scripts/test-supabase.js
+
 .vercel
