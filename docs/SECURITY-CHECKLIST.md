@@ -9,7 +9,7 @@ This checklist tracks the technical security, data privacy, and legal compliance
 - [ ] **Service Role Key Scoped**: Ensure that `SUPABASE_SERVICE_ROLE_KEY` is strictly configured for server-side execution and is never exposed in client scripts or `NEXT_PUBLIC_` variables.
 - [ ] **Clerk Secret Key Quarantine**: Confirm that `CLERK_SECRET_KEY` is a server-side only variable and is never exposed in client bundles. It must NOT be prefixed with `NEXT_PUBLIC_`.
 - [ ] **Clerk Publishable Key Exposed Safely**: Confirm that `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` IS prefixed with `NEXT_PUBLIC_` (client-safe by design). This key is public and identifies the Clerk application — it does not grant admin access.
-- [ ] **Test Mode Disabled**: Confirm that `NEXT_PUBLIC_TEST_MODE` is set to `false` or completely omitted on staging and production environments.
+- [ ] **Test Mode Disabled**: Confirm that `E2E_TEST_MODE` is set to `false` or completely omitted on staging and production environments (and never exposed as a client-side public variable).
 - [ ] **Safe Client Variables**: Ensure that client-exposed variables (`NEXT_PUBLIC_VAT_RATE_PERCENT`, etc.) contain only public, non-sensitive configuration metrics.
 
 ---

@@ -50,6 +50,18 @@ export async function addTimelineEvent(formData: {
   const auth = await requireAuthUser();
   const adminDb = createAdminClient();
 
+  // Verify matter ownership
+  const { data: matter, error: matterError } = await adminDb
+    .from('matters')
+    .select('id')
+    .eq('id', formData.matterId)
+    .eq('firm_id', auth.firmId)
+    .single();
+
+  if (matterError || !matter) {
+    return { success: false, error: 'Access denied: Matter not found.' };
+  }
+
   const { error } = await adminDb
     .from('matter_events')
     .insert({

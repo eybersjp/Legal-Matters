@@ -6,7 +6,7 @@ export async function updateSession(request: NextRequest) {
     request,
   });
 
-  if (process.env.NEXT_PUBLIC_TEST_MODE === 'true' && process.env.NODE_ENV !== 'production') {
+  if (process.env.E2E_TEST_MODE === 'true' && process.env.NODE_ENV !== 'production') {
     const isAuthenticated = request.cookies.get('mock-authenticated')?.value === 'true';
     const path = request.nextUrl.pathname;
     

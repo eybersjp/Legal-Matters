@@ -27,10 +27,10 @@ Under the **Environment Variables** section in Vercel, add the following paramet
 | `NEXT_PUBLIC_VAT_RATE_PERCENT` | `15.00` | Public |
 | `NEXT_PUBLIC_DEFAULT_TIMEZONE` | `Africa/Johannesburg` | Public |
 | `NEXT_PUBLIC_DEFAULT_LOCALE` | `en_ZA` | Public |
-| `NEXT_PUBLIC_TEST_MODE` | `false` | **Set strictly to `false`** |
+| `E2E_TEST_MODE` | `false` | **Set strictly to `false` (Server-side only)** |
 
 ### ⚠️ Environment Variable Warnings:
-- **Do NOT set `NEXT_PUBLIC_TEST_MODE=true`**: This enables mock authentication bypass and compromises your security posture.
+- **Do NOT set `E2E_TEST_MODE=true`**: This enables mock authentication bypass and compromises your security posture.
 - **Do NOT expose `SUPABASE_SERVICE_ROLE_KEY` or `CLERK_SECRET_KEY` client-side**: Both keys provide privileged API access and must never be loaded in public browser files. Verify neither variable is prefixed with `NEXT_PUBLIC_`.
 - **Do NOT rely on `.env.local` inside Vercel**: All environment variables must be configured directly via the Vercel Dashboard.
 - **Clerk Dashboard must be configured**: After adding Clerk env vars, ensure your Vercel staging URL is registered under **Clerk Dashboard → Sites → Application URLs** to allow redirects and webhooks.

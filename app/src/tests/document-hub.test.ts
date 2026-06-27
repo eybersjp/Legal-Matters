@@ -2,7 +2,8 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import {
   uploadDocument,
   generatePlaceholderAISummary,
-  approveRejectAISummary
+  approveRejectAISummary,
+  createDocumentVersion
 } from '../server/actions/document.actions';
 import { requireAuthUser } from '../lib/auth';
 import { createAdminClient } from '../lib/supabase/server';
@@ -149,11 +150,50 @@ describe('Secure Document Hub Server Actions', () => {
       const res = await uploadDocument(formData);
       expect(res.success).toBe(true);
 
-      // Verify storage path generation uses randomized path instead of filename
+      // Verify storage path generation uses randomized path and filename
       const uploadCall = mockSupabase.storage.upload.mock.calls[0];
       const storagePath = uploadCall[0];
-      expect(storagePath).not.toContain('pleading.pdf');
+      expect(storagePath).toContain('pleading.pdf');
       expect(storagePath).toContain('firm-jhb-456/matter-123/');
+    });
+  });
+
+  describe('createDocumentVersion', () => {
+    it('should upload version and reset document status', async () => {
+      const file = new File(['new-pdf-content'], 'version2.pdf', { type: 'application/pdf' });
+      const formData = new FormData();
+      formData.append('documentId', 'doc-123');
+      formData.append('file', file);
+      formData.append('classification', 'Pleading');
+
+      // 1. Mock select documents
+      mockSupabase.single.mockResolvedValueOnce({
+        data: { id: 'doc-123', firm_id: 'firm-jhb-456', matter_id: 'matter-123', title: 'Doc Title', category: 'Pleading' },
+        error: null
+      });
+
+      // 2. Mock select version number
+      mockSupabase.limit.mockResolvedValueOnce({
+        data: [{ version_number: 1 }],
+        error: null
+      });
+
+      // 3. Mock updates
+      mockSupabase.update.mockImplementation(() => mockSupabase);
+
+      const res = await createDocumentVersion(formData);
+      expect(res.success).toBe(true);
+
+      const uploadCall = mockSupabase.storage.upload.mock.calls[0];
+      const storagePath = uploadCall[0];
+      expect(storagePath).toContain('firm-jhb-456/matter-123/doc-123/');
+      expect(storagePath).toContain('version2.pdf');
+
+      // Verify jobs insertion is called
+      const jobsCall = mockSupabase.insert.mock.calls.find((call: any) =>
+        call[0].job_type === 'extraction' && call[0].status === 'queued'
+      );
+      expect(jobsCall).toBeDefined();
     });
   });
 

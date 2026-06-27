@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useSignIn, useClerk } from '@clerk/nextjs';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -14,58 +14,88 @@ export default function LoginPage() {
   const [isPending, setIsPending] = useState(false);
   const router = useRouter();
 
+  useEffect(() => {
+    if (signIn && signIn.status === 'complete') {
+      console.log('Detected complete sign-in status. Finalizing...');
+      signIn.finalize({
+        navigate: ({ decorateUrl }) => {
+          const url = decorateUrl('/dashboard');
+          if (url.startsWith('http')) {
+            window.location.href = url;
+          } else {
+            router.push(url);
+          }
+        },
+      });
+    }
+  }, [signIn?.status]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     setError(null);
     setIsPending(true);
 
-    if (process.env.NEXT_PUBLIC_TEST_MODE === 'true') {
-      if (email === 'fail@example.com' || password === 'wrong') {
-        setError('Invalid credentials');
-        setIsPending(false);
+    try {
+      const { tryTestLogin } = await import('@/server/actions/auth.actions');
+      const testRes = await tryTestLogin({ email, password });
+      
+      if (testRes.isTestMode) {
+        if (testRes.success) {
+          setIsPending(false);
+          router.refresh();
+          router.replace('/dashboard');
+        } else {
+          setError(testRes.error || 'Mock authentication failed.');
+          setIsPending(false);
+        }
         return;
       }
+    } catch (err) {
+      console.warn('Test mode check failed:', err);
+    }
 
-      const { loginUser } = await import('@/server/actions/auth.actions');
-      const res = await loginUser({ email });
-      if (res.success) {
-        setIsPending(false);
-        router.refresh();
-        router.replace('/dashboard');
-      } else {
-        setError(res.error || 'Mock authentication failed.');
-        setIsPending(false);
-      }
+    if (!signIn) {
+      setError('Authentication helper is not loaded yet. Please try again.');
+      setIsPending(false);
       return;
     }
 
     try {
-      const result = await signIn.create({
+      console.log('SIGNIN_STATUS_BEFORE:', signIn.status);
+
+      const res = await signIn.create({
         identifier: email,
         password,
       });
 
-      if (result.error) {
-        const message = result.error.longMessage || result.error.message || 'Authentication failed.';
-        setError(message);
+      console.log('CREATE_RESULT_ERROR:', res?.error);
+
+      if (res?.error) {
+        console.error('SIGNIN_ERROR:', res.error);
+        setError(res.error.longMessage || res.error.message || 'Authentication failed.');
+        setIsPending(false);
         return;
       }
 
-      if (signIn.status === 'complete') {
-        await setActive({ session: signIn.createdSessionId });
-        router.refresh();
-        router.replace('/dashboard');
+      // Check the global clerk instance if proxy is not updated synchronously yet
+      const clerkGlobal = (window as any).Clerk;
+      const currentStatus = clerkGlobal?.client?.signIn?.status || signIn.status;
+      console.log('SIGNIN_STATUS_CHECK:', currentStatus);
+
+      if (currentStatus === 'complete') {
+        // If it's complete, the useEffect hook will handle finalization and redirection
+        console.log('Sign-in status complete. Redirection pending.');
       } else {
-        // Handle multi-step sign-in flows (e.g., MFA)
-        setError('Additional authentication steps are required.');
+        setError(`Additional authentication steps are required. Status: ${currentStatus}`);
+        setIsPending(false);
       }
     } catch (err: any) {
+      console.error('LOGIN_ERROR:', err);
       const message = err.errors?.[0]?.longMessage
         || err.errors?.[0]?.message
         || 'Authentication failed. Please check your credentials and try again.';
       setError(message);
-    } finally {
       setIsPending(false);
     }
   };

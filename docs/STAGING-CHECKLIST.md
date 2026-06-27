@@ -38,7 +38,7 @@ This checklist tracks the deployment validation requirements for the **Legal Mat
 ---
 
 ## ⚙️ 4. Environment Variable Safety & Test Mode Guards
-- [x] **Production Guards**: Verify that the `NEXT_PUBLIC_TEST_MODE` E2E mock bypass has an active guard checking `process.env.NODE_ENV !== 'production'`.
+- [x] **Production Guards**: Verify that the `E2E_TEST_MODE` E2E mock bypass has active guards checking `process.env.NODE_ENV !== 'production'` and is only read on the server side.
 - [x] **Symmetric Encryption Keys**: Ensure that the `ENCRYPTION_SECRET_KEY` is a unique, hex-encoded 32-character key generated via secure random sources (not reusing example keys).
 - [x] **Supabase Key Quarantine**: Confirm that `SUPABASE_SERVICE_ROLE_KEY` is only available on the server-side environment and is never exposed in client bundles.
 - [x] **Clerk Secret Key Quarantine**: Confirm that `CLERK_SECRET_KEY` is a server-side only variable and is never exposed in client bundles (it is NOT prefixed with `NEXT_PUBLIC_`).

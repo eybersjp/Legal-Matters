@@ -52,7 +52,7 @@ This document outlines the manual verification checks to execute on your live st
 - [ ] **25. Cross-Firm Document Block**: Attempt to download a document version file from storage belonging to Firm A. Verify access is blocked.
 - [ ] **26. Privilege Quarantine**: Log in as a Client Portal user. Try to look at a file flagged as `is_privileged = true`. Verify it is hidden, confirming legal privilege quarantine.
 - [ ] **27. Private Storage Bucket**: Verify that documents uploaded to the bucket are private and cannot be listed or downloaded anonymously.
-- [x] **28. Test Mode Disabled**: Open browser dev tools and confirm that `NEXT_PUBLIC_TEST_MODE` is not active on staging (Vercel env vars confirmed `NEXT_PUBLIC_TEST_MODE` is unset for staging/production).
+- [x] **28. Test Mode Disabled**: Open browser dev tools and confirm that `E2E_TEST_MODE` is not active on staging (Vercel env vars confirmed `E2E_TEST_MODE` is unset or set to `false` for staging/production, and never exposed to the client).
 
 ### 📜 6. Compliance Auditing
 - [ ] **29. Document Access Logs**: Navigate to client documents and click **Get**. Confirm a corresponding read entry is instantly written into `document_access_logs`.

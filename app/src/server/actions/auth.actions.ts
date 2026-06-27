@@ -94,18 +94,27 @@ export async function logoutUser() {
 import { cookies } from 'next/headers';
 
 /**
- * Mock login action used only in test mode to set server-side cookies safely.
+ * Safe server-only action to handle mock/test authentication.
+ * Active only when E2E_TEST_MODE is true and NODE_ENV is not production.
  */
-export async function loginUser(formData: { email: string }) {
-  if (process.env.NEXT_PUBLIC_TEST_MODE === 'true') {
-    const cookieStore = await cookies();
-    cookieStore.set('mock-authenticated', 'true', { path: '/' });
-    if (formData.email === 'nofirm@example.com') {
-      cookieStore.set('mock-user-id', 'mock-user-no-firm-uuid', { path: '/' });
-    } else {
-      cookieStore.set('mock-user-id', 'mock-user-uuid', { path: '/' });
-    }
-    return { success: true };
+export async function tryTestLogin(formData: { email: string; password?: string }) {
+  const isTestMode = process.env.E2E_TEST_MODE === 'true' && process.env.NODE_ENV !== 'production';
+  if (!isTestMode) {
+    return { success: false, isTestMode: false };
   }
-  return { success: false, error: 'Not in test mode' };
+
+  const { email, password } = formData;
+  if (email === 'fail@example.com' || password === 'wrong') {
+    return { success: false, isTestMode: true, error: 'Invalid credentials' };
+  }
+
+  const cookieStore = await cookies();
+  cookieStore.set('mock-authenticated', 'true', { path: '/' });
+  if (email === 'nofirm@example.com') {
+    cookieStore.set('mock-user-id', 'mock-user-no-firm-uuid', { path: '/' });
+  } else {
+    cookieStore.set('mock-user-id', 'mock-user-uuid', { path: '/' });
+  }
+  return { success: true, isTestMode: true };
 }
+

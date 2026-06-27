@@ -59,6 +59,18 @@ export async function recordTimeEntry(formData: any) {
   const auth = await requireAuthUser();
   const adminDb = createAdminClient();
 
+  // Verify matter ownership
+  const { data: matter, error: matterError } = await adminDb
+    .from('matters')
+    .select('id')
+    .eq('id', parsed.data.matter_id)
+    .eq('firm_id', auth.firmId)
+    .single();
+
+  if (matterError || !matter) {
+    return { success: false, error: 'Access denied: Matter not found.' };
+  }
+
   const { error } = await adminDb
     .from('time_entries')
     .insert({
@@ -77,4 +89,57 @@ export async function recordTimeEntry(formData: any) {
 
   revalidatePath('/dashboard/time');
   return { success: true };
+}
+
+export async function getMatterTimeEntries(matterId: string) {
+  const auth = await requireAuthUser();
+  const adminDb = createAdminClient();
+
+  // Verify matter ownership
+  const { data: matter, error: matterError } = await adminDb
+    .from('matters')
+    .select('id')
+    .eq('id', matterId)
+    .eq('firm_id', auth.firmId)
+    .single();
+
+  if (matterError || !matter) {
+    throw new Error('Access denied: Matter not found.');
+  }
+
+  const { data, error } = await adminDb
+    .from('time_entries')
+    .select(`
+      id,
+      duration_minutes,
+      hourly_rate_zar,
+      description,
+      is_billed,
+      created_at,
+      firm_members (
+        user_profiles (
+          first_name,
+          last_name
+        )
+      )
+    `)
+    .eq('matter_id', matterId)
+    .eq('firm_id', auth.firmId)
+    .order('created_at', { ascending: false });
+
+  if (error) throw new Error(error.message);
+
+  return data.map((entry: any) => ({
+    id: entry.id,
+    duration: entry.duration_minutes,
+    rate: entry.hourly_rate_zar,
+    description: entry.description,
+    isBilled: entry.is_billed,
+    created_at: entry.created_at,
+    fee_earner: entry.firm_members?.[0]?.user_profiles?.[0]
+      ? `${entry.firm_members[0].user_profiles[0].first_name} ${entry.firm_members[0].user_profiles[0].last_name}`
+      : entry.firm_members?.user_profiles?.first_name
+        ? `${entry.firm_members.user_profiles.first_name} ${entry.firm_members.user_profiles.last_name}`
+        : 'Unknown',
+  }));
 }

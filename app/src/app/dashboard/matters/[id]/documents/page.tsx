@@ -15,6 +15,13 @@ import {
 } from '@/server/actions/document.actions';
 import { getMatterDetails } from '@/server/actions/matter.actions';
 import {
+  getDocumentAiOutputs,
+  getAiOutputWithSources,
+  approveAiOutput,
+  rejectAiOutput
+} from '@/server/actions/ai-output.actions';
+import AiSummaryPanel from '@/components/AiSummaryPanel';
+import {
   FileText,
   Plus,
   Download,
@@ -28,7 +35,13 @@ import {
   Unlock,
   Sparkles,
   History,
-  AlertTriangle
+  AlertTriangle,
+  ChevronDown,
+  ChevronRight,
+  Quote,
+  BookOpen,
+  BadgeCheck,
+  RotateCcw
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -46,6 +59,15 @@ export default function MatterDocumentsPage({ params }: { params: Promise<{ id: 
   const [selectedDocId, setSelectedDocId] = useState<string | null>(null);
   const [selectedDoc, setSelectedDoc] = useState<any>(null);
   const [isLoadingDetail, setIsLoadingDetail] = useState(false);
+
+  // Phase 3 AI Outputs
+  const [aiOutputs, setAiOutputs] = useState<any[]>([]);
+  const [selectedAiOutput, setSelectedAiOutput] = useState<any>(null);
+  const [isLoadingAiOutputs, setIsLoadingAiOutputs] = useState(false);
+  const [expandedCitations, setExpandedCitations] = useState<string | null>(null);
+  const [rejectReason, setRejectReason] = useState('');
+  const [showRejectForm, setShowRejectForm] = useState<string | null>(null);
+  const [isAiActionPending, setIsAiActionPending] = useState(false);
 
   // Form Fields for Upload
   const [title, setTitle] = useState('');
@@ -76,27 +98,92 @@ export default function MatterDocumentsPage({ params }: { params: Promise<{ id: 
     loadData();
   }, [loadData]);
 
-  // Load document detail when selectedDocId changes
+  // Load document detail + Phase 3 AI outputs when selectedDocId changes
   useEffect(() => {
     if (!selectedDocId) {
       setSelectedDoc(null);
+      setAiOutputs([]);
+      setSelectedAiOutput(null);
+      setExpandedCitations(null);
       return;
     }
 
     const loadDetail = async () => {
       setIsLoadingDetail(true);
+      setIsLoadingAiOutputs(true);
       try {
-        const detail = await getDocumentDetail(selectedDocId);
+        const [detail, outputs] = await Promise.all([
+          getDocumentDetail(selectedDocId),
+          getDocumentAiOutputs(selectedDocId)
+        ]);
         setSelectedDoc(detail);
+        setAiOutputs(outputs || []);
       } catch (err: any) {
         setError(err.message || 'Failed to load document details.');
       } finally {
         setIsLoadingDetail(false);
+        setIsLoadingAiOutputs(false);
       }
     };
 
     loadDetail();
   }, [selectedDocId]);
+
+  const loadAiOutputSources = async (outputId: string) => {
+    if (expandedCitations === outputId) {
+      setExpandedCitations(null);
+      setSelectedAiOutput(null);
+      return;
+    }
+    try {
+      const detail = await getAiOutputWithSources(outputId);
+      setSelectedAiOutput(detail);
+      setExpandedCitations(outputId);
+    } catch (err: any) {
+      setError(err.message || 'Failed to load AI output citations.');
+    }
+  };
+
+  const handleApproveAiOutput = async (outputId: string) => {
+    setIsAiActionPending(true);
+    setError(null);
+    try {
+      await approveAiOutput(outputId, { reason: 'Approved by practitioner' });
+      setSuccess('AI output approved successfully.');
+      if (selectedDocId) {
+        const outputs = await getDocumentAiOutputs(selectedDocId);
+        setAiOutputs(outputs || []);
+      }
+    } catch (err: any) {
+      setError(err.message || 'Failed to approve AI output.');
+    } finally {
+      setIsAiActionPending(false);
+    }
+  };
+
+  const handleRejectAiOutput = async (outputId: string, reason?: string) => {
+    const finalReason = reason || rejectReason;
+    if (!finalReason || finalReason.trim().length < 5) {
+      setError('Rejection reason must be at least 5 characters.');
+      return;
+    }
+    setIsAiActionPending(true);
+    setError(null);
+    try {
+      await rejectAiOutput(outputId, { reason: finalReason });
+      setSuccess('AI output rejected.');
+      setShowRejectForm(null);
+      setRejectReason('');
+      if (selectedDocId) {
+        const outputs = await getDocumentAiOutputs(selectedDocId);
+        setAiOutputs(outputs || []);
+      }
+    } catch (err: any) {
+      setError(err.message || 'Failed to reject AI output.');
+    } finally {
+      setIsAiActionPending(false);
+    }
+  };
 
   const handleUpload = (e: React.FormEvent) => {
     e.preventDefault();
@@ -641,7 +728,40 @@ export default function MatterDocumentsPage({ params }: { params: Promise<{ id: 
                   )}
                 </div>
 
-                {/* Upload New Version */}
+                {/* Phase 3: AI Outputs Panel */}
+                <div className="space-y-3 bg-slate-50 dark:bg-slate-950 p-4 rounded-lg border border-slate-100 dark:border-slate-800">
+                  <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-1.5">
+                    <h4 className="text-xs font-bold uppercase tracking-wider text-gold-500 flex items-center gap-1">
+                      <BookOpen className="h-3.5 w-3.5" /> AI Outputs
+                    </h4>
+                    <span className="text-[10px] text-slate-400">{aiOutputs.length} record{aiOutputs.length !== 1 ? 's' : ''}</span>
+                  </div>
+
+                  {isLoadingAiOutputs ? (
+                    <div className="flex items-center gap-2 text-xs text-slate-400 py-2">
+                      <Scale className="animate-spin h-3.5 w-3.5 text-gold-500" />
+                      Loading AI outputs...
+                    </div>
+                  ) : aiOutputs.length === 0 ? (
+                    <p className="text-xs text-slate-400 py-2">
+                      No Phase 3 AI outputs generated for this document yet.
+                    </p>
+                  ) : (
+                    <div className="space-y-3">
+                      {aiOutputs.map((output: any) => (
+                        <AiSummaryPanel
+                          key={output.id}
+                          output={output}
+                          onApprove={handleApproveAiOutput}
+                          onReject={handleRejectAiOutput}
+                          isActionPending={isAiActionPending}
+                        />
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+
                 <div className="space-y-3 bg-slate-50 dark:bg-slate-950 p-4 rounded-lg border border-slate-100 dark:border-slate-800">
                   <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 border-b border-slate-200 dark:border-slate-800 pb-1.5 flex items-center gap-1">
                     <History className="h-4 w-4" /> Upload New Version

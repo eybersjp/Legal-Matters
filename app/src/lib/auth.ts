@@ -15,7 +15,7 @@ export interface AuthUser {
  * Must be called from Server Actions or Server Components.
  */
 export async function getAuthUser(): Promise<AuthUser | null> {
-  if (process.env.NEXT_PUBLIC_TEST_MODE === 'true' && process.env.NODE_ENV !== 'production') {
+  if (process.env.E2E_TEST_MODE === 'true' && process.env.NODE_ENV !== 'production') {
     const { cookies } = await import('next/headers');
     const cookieStore = await cookies();
     const isMockAuth = cookieStore.get('mock-authenticated')?.value === 'true';
@@ -61,7 +61,7 @@ export async function getAuthUser(): Promise<AuthUser | null> {
  * Requires an authenticated user. Throws if not authenticated or no firm membership.
  */
 export async function requireAuthUser(): Promise<AuthUser> {
-  if (process.env.NEXT_PUBLIC_TEST_MODE === 'true' && process.env.NODE_ENV !== 'production') {
+  if (process.env.E2E_TEST_MODE === 'true' && process.env.NODE_ENV !== 'production') {
     const { cookies } = await import('next/headers');
     const cookieStore = await cookies();
     const isMockAuth = cookieStore.get('mock-authenticated')?.value === 'true';

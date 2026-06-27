@@ -7,7 +7,7 @@ const isProtectedRoute = createRouteMatcher([
 ])
 
 export default clerkMiddleware(async (auth, req) => {
-  if (process.env.NEXT_PUBLIC_TEST_MODE === 'true' && process.env.NODE_ENV !== 'production') {
+  if (process.env.E2E_TEST_MODE === 'true' && process.env.NODE_ENV !== 'production') {
     const isAuthenticated = req.cookies.get('mock-authenticated')?.value === 'true';
     if (isAuthenticated) {
       return NextResponse.next();
@@ -21,7 +21,7 @@ export default clerkMiddleware(async (auth, req) => {
   }
 
   if (isProtectedRoute(req)) {
-    auth.protect()
+    await auth.protect()
   }
   return NextResponse.next();
 })

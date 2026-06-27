@@ -70,9 +70,10 @@ export async function uploadDocument(formData: FormData) {
   }
 
   // Safe file name and path
-  const safeExtension = deriveExtensionFromMimeType(file.type);
-  const fileId = crypto.randomUUID();
-  const storagePath = `${auth.firmId}/${matterId}/${fileId}${safeExtension}`;
+  const docId = crypto.randomUUID();
+  const versionId = crypto.randomUUID();
+  const safeFilename = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
+  const storagePath = `${auth.firmId}/${matterId}/${docId}/${versionId}/${safeFilename}`;
 
   const arrayBuffer = await file.arrayBuffer();
   const fileBuffer = Buffer.from(arrayBuffer);
@@ -93,6 +94,7 @@ export async function uploadDocument(formData: FormData) {
   const { data: doc, error: docError } = await adminDb
     .from('documents')
     .insert({
+      id: docId,
       firm_id: auth.firmId,
       matter_id: matterId,
       title: title,
@@ -118,8 +120,9 @@ export async function uploadDocument(formData: FormData) {
   const { error: versionError } = await adminDb
     .from('document_versions')
     .insert({
+      id: versionId,
       firm_id: auth.firmId,
-      document_id: doc.id,
+      document_id: docId,
       version_number: 1,
       storage_path: storagePath,
       file_name: file.name,
@@ -131,9 +134,30 @@ export async function uploadDocument(formData: FormData) {
 
   if (versionError) {
     // Attempt cleanup
-    await adminDb.from('documents').delete().eq('id', doc.id);
+    await adminDb.from('documents').delete().eq('id', docId);
     await adminDb.storage.from('legal-matters-docs').remove([storagePath]);
     return { success: false, error: `Version registration failed: ${versionError.message}` };
+  }
+
+  // Create document_processing_jobs row
+  const { error: jobError } = await adminDb
+    .from('document_processing_jobs')
+    .insert({
+      firm_id: auth.firmId,
+      matter_id: matterId,
+      document_id: docId,
+      document_version_id: versionId,
+      job_type: 'extraction',
+      status: 'queued',
+      created_by: auth.userId
+    });
+
+  if (jobError) {
+    // Attempt cleanup
+    await adminDb.from('document_versions').delete().eq('id', versionId);
+    await adminDb.from('documents').delete().eq('id', docId);
+    await adminDb.storage.from('legal-matters-docs').remove([storagePath]);
+    return { success: false, error: `Processing job registration failed: ${jobError.message}` };
   }
 
   // Write audit log
@@ -213,10 +237,12 @@ export async function registerDocumentUpload(formData: {
 
   if (docErr) return { success: false, error: docErr.message };
 
+  const versionId = crypto.randomUUID();
   // Insert Document Version 1 Entry
   const { error: verErr } = await adminDb
     .from('document_versions')
     .insert({
+      id: versionId,
       firm_id: auth.firmId,
       document_id: doc.id,
       version_number: 1,
@@ -231,6 +257,25 @@ export async function registerDocumentUpload(formData: {
   if (verErr) {
     await adminDb.from('documents').delete().eq('id', doc.id);
     return { success: false, error: verErr.message };
+  }
+
+  // Create document_processing_jobs row
+  const { error: jobError } = await adminDb
+    .from('document_processing_jobs')
+    .insert({
+      firm_id: auth.firmId,
+      matter_id: formData.matterId,
+      document_id: doc.id,
+      document_version_id: versionId,
+      job_type: 'extraction',
+      status: 'queued',
+      created_by: auth.userId
+    });
+
+  if (jobError) {
+    await adminDb.from('document_versions').delete().eq('id', versionId);
+    await adminDb.from('documents').delete().eq('id', doc.id);
+    return { success: false, error: `Processing job registration failed: ${jobError.message}` };
   }
 
   // Create audit log
@@ -676,8 +721,9 @@ export async function createDocumentVersion(formData: FormData) {
   const nextVersionNum = (versions?.[0]?.version_number || 0) + 1;
 
   // Safe file extension and storage path
-  const safeExtension = deriveExtensionFromMimeType(file.type);
-  const storagePath = `${auth.firmId}/${doc.matter_id}/${crypto.randomUUID()}${safeExtension}`;
+  const versionId = crypto.randomUUID();
+  const safeFilename = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
+  const storagePath = `${auth.firmId}/${doc.matter_id}/${doc.id}/${versionId}/${safeFilename}`;
 
   const arrayBuffer = await file.arrayBuffer();
   const fileBuffer = Buffer.from(arrayBuffer);
@@ -698,6 +744,7 @@ export async function createDocumentVersion(formData: FormData) {
   const { error: versionError } = await adminDb
     .from('document_versions')
     .insert({
+      id: versionId,
       firm_id: auth.firmId,
       document_id: documentId,
       version_number: nextVersionNum,
@@ -715,7 +762,7 @@ export async function createDocumentVersion(formData: FormData) {
   }
 
   // Reset document statuses to allow review of the new version
-  await adminDb
+  const { error: updateDocErr } = await adminDb
     .from('documents')
     .update({
       status: 'uploaded',
@@ -723,6 +770,31 @@ export async function createDocumentVersion(formData: FormData) {
       approval_status: 'pending'
     })
     .eq('id', documentId);
+
+  if (updateDocErr) {
+    await adminDb.from('document_versions').delete().eq('id', versionId);
+    await adminDb.storage.from('legal-matters-docs').remove([storagePath]);
+    return { success: false, error: `Document status reset failed: ${updateDocErr.message}` };
+  }
+
+  // Create document_processing_jobs row
+  const { error: jobError } = await adminDb
+    .from('document_processing_jobs')
+    .insert({
+      firm_id: auth.firmId,
+      matter_id: doc.matter_id,
+      document_id: documentId,
+      document_version_id: versionId,
+      job_type: 'extraction',
+      status: 'queued',
+      created_by: auth.userId
+    });
+
+  if (jobError) {
+    await adminDb.from('document_versions').delete().eq('id', versionId);
+    await adminDb.storage.from('legal-matters-docs').remove([storagePath]);
+    return { success: false, error: `Processing job registration failed: ${jobError.message}` };
+  }
 
   // Write audit log
   await adminDb.from('audit_logs').insert({

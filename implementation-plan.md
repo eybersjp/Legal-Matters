@@ -1,183 +1,88 @@
-# Implementation Plan: Staging Verification
+# Phase 2 — Matter OS Completion & Closure Workflow Hardening
 
-This document outlines the execution plan for the staging verification phase of the **Legal Matters** platform. This plan details environment provisioning, configuration checklists, manual smoke tests, cross-tenant boundary verification, and the go/no-go decision framework for promoting the MVP to the staging environment.
+This implementation plan details the architectural, database, backend API, and UI changes necessary to implement complete matter workflows, client billing controls, and LPC/POPIA compliance gates during matter closure.
 
----
-
-## 🎯 1. Objective
-To execute a systematic, manual and automated verification of the platform’s security, authentication, and multi-tenant isolation controls on the staging environment (`https://legal-matters-two.vercel.app`) using a dedicated staging Clerk project and clean Supabase database environment.
-
----
-
-## 🚦 2. Current Known Status
-- **Clerk Staging Hardening**: Completed.
-- **Playwright E2E**: Fully moved to port `3333` (resolving Windows port conflicts).
-- **TypeScript Typecheck**: Passed (`npm run typecheck` runs cleanly).
-- **Unit Tests**: Passed (15/15 Vitest tests are green).
-- **ESLint Linter**: Passed (0 warnings, 0 errors).
-- **E2E Tests**: Passed (11/11 Playwright tests are green sequentially on port `3333`).
-- **Production Build**: Passed (Next.js compilation compiles cleanly).
-- **Server Actions Scoping**: Hardened with strict `firm_id` scoping resolved from Clerk session metadata on the server side:
-  - `trust_account_records` queries and mutations.
-  - `documents` and matter access.
-  - `matter_deadlines` (upcoming deadlines).
-  - `popia_consents` reads and writes.
-  - `audit_logs` reading and writing (scoped user name lookups).
-- **Staging Smoke & Isolation Tests**: Outstanding / Pending manual review.
-- **Status Verdict**: **Conditionally Staging Ready — automated validation has passed, but live staging manual and cross-tenant security verification remains incomplete.**
-- **Key Blocker**: Database-side Supabase Row Level Security (RLS) is not compatible with Clerk TEXT user IDs, meaning unprivileged client-side Supabase direct queries are completely blocked. All confidential legal data must remain secured behind server actions / server-side API routes.
+## Current Baseline
+* **Framework**: Next.js 15 (App Router), Supabase (PostgreSQL), Clerk.
+* **Security & Tenancy**: Cross-tenant parameter checks are active in `createMatter`, `recordTimeEntry`, `addTimelineEvent`, and `createCourtDeadline` server actions. Supabase database-side RLS has passed isolation validation tests.
+* **Compliance Schemas**: Zod validation schemas check 13-digit SA ID Luhn checksums and `YYYY/NNNNNN/NN` company registration patterns.
+* **Database State**: `expenses` and `payments` tables exist on the remote staging database with RLS policies scoped to `get_auth_firm_id()`.
+* **Diagnostic Status**: 
+  - `npm run typecheck` — Passed
+  - `npm run lint` — Passed (0 errors, 0 warnings)
+  - `npm run test:run` — Passed (27/27 unit tests green)
+  - `npm run test:db` — Passed (RLS helper functions verified)
+  - `npm run test:e2e` — Passed (12/12 Playwright tests green)
 
 ---
 
-## 🌐 3. Staging Environment Requirements
-- **Target Staging URL**: `https://legal-matters-two.vercel.app` (or newer staging deployment URL from Vercel).
-- **Clerk Instance**: A dedicated Clerk **Staging** project (do not reuse the development Clerk workspace or production keys).
-- **Supabase Instance**: A dedicated staging Supabase database containing mock/test data only. No production or real client data may be imported.
-- **Data Access Boundary**: Client-side direct Supabase access must not be used. All interactions must proceed via Next.js Server Actions.
+## Sprint Objective
+To transition the Matter OS from a basic layout to a fully featured practice management dashboard. This includes implementing task boards and calculated deadlines tracking, adding expenses and payments forms, updating dashboard telemetry cards, writing security regression tests, and enforcing a strict LPC-compliant case closure wizard checking for outstanding tasks, deadlines, fees, and POPIA data-retention consent.
 
 ---
 
-## 🔑 4. Required Environment Variables to Verify
-Confirm that the following variables are configured in the Vercel staging dashboard:
+## Proposed Changes
 
-| Variable Name | Required Value/Format | Accessibility | Status |
-| :--- | :--- | :--- | :--- |
-| `E2E_TEST_MODE` | `false` (or unset) | Server Only (Quarantined) | **[VERIFIED]** Unset/False |
-| `NEXT_PUBLIC_TEST_MODE` | `false` (or unset) | Client & Server | **[VERIFIED]** Unset/False |
-| `NODE_ENV` | `production` (in Vercel staging) | Client & Server | **[VERIFIED]** Set automatically |
-| `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` | `pk_test_...` (Staging Key) | Client & Server | **[VERIFIED]** Configured |
-| `CLERK_SECRET_KEY` | `sk_test_...` (Staging Secret) | Server Only (Quarantined) | **[VERIFIED]** Configured |
-| `NEXT_PUBLIC_SUPABASE_URL` | Staging Supabase URL | Client & Server | **[VERIFIED]** Configured |
-| `SUPABASE_SERVICE_ROLE_KEY` | Staging Service Role Key | Server Only (Quarantined) | **[VERIFIED]** Configured |
-| `ENCRYPTION_SECRET_KEY` | Unique 32-character hex key | Server Only (Quarantined) | **[VERIFIED]** Configured |
+### Database & Schemas
 
-> [!NOTE]
-> - `E2E_TEST_MODE` must never be exposed as a `NEXT_PUBLIC_` variable. It must remain server-only so that browser-side code cannot enable mock authentication behaviour.
-> - `NODE_ENV` is normally set by the hosting platform. On Vercel staging/preview deployments, verify runtime behaviour rather than manually overriding it unless there is a documented reason.
+#### [NEW] [20260612225800_phase_2_schema_adjustments.sql](file:///c:/Users/SSTECH/developments/legal-matters/app/supabase/migrations/20260612225800_phase_2_schema_adjustments.sql)
+- Alter `public.matters` table: Add closure metadata columns (`closed_at`, `closure_reason`, `client_communication_status`, `document_archive_status`, `data_retention_confirmed`).
+- Alter `public.matter_deadlines` table: Add `is_completed` column.
+- Add database indices on `matter_tasks(matter_id, status)` and `matter_deadlines(matter_id, is_completed)`.
+- Apply appropriate SELECT, INSERT, UPDATE, DELETE permissions on modified columns to database roles.
+
+#### [MODIFY] [index.ts](file:///c:/Users/SSTECH/developments/legal-matters/app/src/schemas/index.ts)
+- Add Zod schemas: `CreateTaskSchema`, `CreateExpenseSchema`, `RecordPaymentSchema`, `CloseMatterValidationSchema`.
 
 ---
 
-## 🛡️ 4.1. Test-Mode Safety Check
-- Staging must not run mock-auth code paths.
-- Mock authentication cookies must be ignored outside E2E test mode.
-- The login flow must use real Clerk authentication in staging.
-- Any server action used for mock login must throw or become unreachable unless `E2E_TEST_MODE` is explicitly enabled in a local Playwright environment.
-- No staging or production environment may enable `E2E_TEST_MODE`.
+### Server Actions (Backend)
+
+#### [NEW] [task.actions.ts](file:///c:/Users/SSTECH/developments/legal-matters/app/src/server/actions/task.actions.ts)
+- Implement `getMatterTasks(matterId: string)` (firm-scoped).
+- Implement `createMatterTask(formData: any)` (firm-scoped).
+- Implement `updateTaskStatus(taskId: string, status: string)` (firm-scoped).
+- Implement `deleteTask(taskId: string)` (firm-scoped).
+
+#### [MODIFY] [deadline.actions.ts](file:///c:/Users/SSTECH/developments/legal-matters/app/src/server/actions/deadline.actions.ts)
+- Implement `getMatterDeadlines(matterId: string)` (firm-scoped).
+- Implement `markDeadlineComplete(deadlineId: string, isCompleted: boolean)` (firm-scoped).
+- Implement `escalateOverdueDeadline(deadlineId: string)` (firm-scoped system-notification).
+
+#### [MODIFY] [billing.actions.ts](file:///c:/Users/SSTECH/developments/legal-matters/app/src/server/actions/billing.actions.ts)
+- Implement `getMatterExpenses(matterId: string)` (firm-scoped).
+- Implement `recordExpense(formData: any)` (firm-scoped).
+- Implement `recordPayment(formData: any)` (firm-scoped).
+
+#### [MODIFY] [matter.actions.ts](file:///c:/Users/SSTECH/developments/legal-matters/app/src/server/actions/matter.actions.ts)
+- Refactor `closeMatter(matterId: string, closureData: any)` to parse inputs via `CloseMatterValidationSchema` and verify that all billing, task, and deadline blocks are cleared before closing.
+
+#### [MODIFY] [dashboard.actions.ts](file:///c:/Users/SSTECH/developments/legal-matters/app/src/server/actions/dashboard.actions.ts)
+- Include unbilled expenses, overdue tasks, and unpaid invoices in `getDashboardStats`.
 
 ---
 
-## ⚙️ 5. Clerk Staging Configuration Checklist
-- [ ] **Dedicated Staging Instance**: Created a new project on [dashboard.clerk.com](https://dashboard.clerk.com).
-- [ ] **Allowed Origins**: Added `https://legal-matters-two.vercel.app` under **Sites** -> **Application URLs** -> **Allowed Origins**.
-- [ ] **Sign-In & Sign-Up Redirects**: Configured standard redirects to `/dashboard` and `/register`.
-- [ ] **MFA / Security Settings**: Enabled appropriate test accounts and passwords for staging testers.
+### User Interface (Frontend)
+
+#### [MODIFY] [page.tsx](file:///c:/Users/SSTECH/developments/legal-matters/app/src/app/dashboard/matters/[id]/page.tsx)
+- Reconstruct the page into a tabbed practice center:
+  - **Overview & Health Indicators**: Readiness score, inactivity warning, deadline risk badge.
+  - **Timeline & Notes**: Interactive activity feed.
+  - **Tasks & Deadlines**: Board to manage tasks and complete calculated deadlines.
+  - **Billing Hub**: Log disbursements/expenses, record payments against invoices.
+  - **Closure Wizard**: Checklist showing green/red indicators for all blocks, with form to submit closure details.
+
+#### [MODIFY] [page.tsx](file:///c:/Users/SSTECH/developments/legal-matters/app/src/app/dashboard/page.tsx)
+- Display unbilled expenses and unpaid invoices on the dashboard bento grid cards.
 
 ---
 
-## 🗄️ 6. Supabase Staging Configuration Checklist
-- [ ] **Database Migrations Applied**: Executed initial schemas (`20260525000000_init_schemas.sql`, `20260525000001_enable_rls.sql`, `20260525000002_audit_triggers.sql`) and Clerk migration (`20260526000000_clerk_auth_migration.sql`).
-- [x] **Column Type Verification**: Verified `firm_members.user_id` and related application user-reference fields are `TEXT` where they store Clerk user IDs. Row primary keys such as `firm_members.id` should remain unchanged unless the schema intentionally uses the Clerk user ID as the primary key.
-- [ ] **Foreign Keys**: Confirmed constraints on child tables (`user_profiles`, `popia_consents`, etc.) are intact.
-- [ ] **RLS Enablement**: RLS is enabled on all tables as defense-in-depth, although application queries run via the service-role client.
+## Verification Plan
 
----
-
-## 🚀 7. Vercel Staging Deployment Checklist
-- [ ] **Git Branch Integration**: Pushed clean, typecheck-passing code to the designated staging branch.
-- [x] **Environment Scope Quarantine**: Verified that server secrets (`SUPABASE_SERVICE_ROLE_KEY`, `CLERK_SECRET_KEY`, `ENCRYPTION_SECRET_KEY`) are marked as "Server Only".
-- [x] **Staging Build Passes**: Vercel deployment logs show clean Next.js bundle building without warning blocks. (Local production build confirmed clean).
-
----
-
-## 📦 7.1. Required Staging Test Data
-To ensure cross-tenant security tests are meaningful, both Firm A and Firm B test records must exist. Create or seed the following test data in the staging databases:
-- [ ] **Firm A** record.
-- [ ] **Firm B** record.
-- [ ] **One Partner user** for Firm A.
-- [ ] **One Attorney user** for Firm A.
-- [ ] **One Client Portal user** for Firm A if the portal is enabled.
-- [ ] **One Partner or Attorney user** for Firm B.
-- [ ] **At least one matter** for Firm A.
-- [ ] **At least one matter** for Firm B.
-- [ ] **At least one document** for Firm A.
-- [ ] **At least one document** for Firm B.
-- [ ] **At least one POPIA consent record** for Firm A.
-- [ ] **At least one POPIA consent record** for Firm B.
-- [ ] **At least one audit log entry** for Firm A.
-- [ ] **At least one audit log entry** for Firm B.
-
----
-
-## 🧪 8. Manual Smoke Test Checklist
-Perform these checks using a standard browser:
-- [ ] **1. Public Pages Render**: Navigate to `/`, `/login`, and `/register`. Verify layout and stylesheet load cleanly.
-- [ ] **2. Route Protection (Unauthenticated)**: Navigate directly to `/dashboard`. Verify `clerkMiddleware` redirects to `/login`.
-- [ ] **3. User Registration Flow**: Complete registration at `/register`. Confirm it redirects to `/login` and creates a Clerk user on the console.
-- [ ] **4. User Sign-In Flow**: Sign in at `/login`. Confirm redirect to `/dashboard`.
-- [ ] **5. User Sign-Out Flow**: Click user avatar -> **Sign out**. Confirm redirection to `/login` and cookies are cleared.
-
----
-
-## 🛡️ 9. Cross-Tenant Security Test Checklist
-Verify application-layer isolation:
-- [ ] **Cross-Tenant Matter / Client Block**: Log in as a Firm A practitioner. Try to manually browse to a Firm B matter ID (`/dashboard/matters/[firm-b-matter-id]`) or client ID (`/dashboard/clients/[firm-b-client-id]`). Verify it redirects to `/dashboard` or throws an access-denied error page.
-
----
-
-## 🔏 10. POPIA Consent Protection Test
-- [ ] **Consent Tamper Block**: Log in as Firm A. Trigger a POST request to the server action `updateClientPopiaConsent` with a `clientId` belonging to Firm B. Verify that the server returns `{ success: false, error: 'Access denied: Client not found.' }` and database records are untouched.
-
----
-
-## 📄 11. Document Access Protection Test
-- [ ] **Unauthorized Download Block**: Log in as Firm A. Trigger a POST request to `getDocumentDownloadUrl(documentId)` where the document belongs to Firm B. Verify that the server action throws an error and no URL is generated.
-- [ ] **Privileged Document Block**: Log in as a Client Portal user. Verify that any documents marked `is_privileged = true` are completely excluded from lists and queries.
-
----
-
-## 📜 12. Audit-Log Firm Scoping Test
-- [ ] **Audit Query Isolation**: Log in as a Partner from Firm A. Navigate to settings/audit logs. Verify that only logs containing `firm_id = Firm A` are returned.
-- [ ] **Profile Mapping Scope**: Verify that no practitioner names from Firm B appear in Firm A's audit log summaries.
-
----
-
-## 📊 13. Dashboard Data Correctness Test
-- [ ] **Dashboard Stats isolation**: Verify that stats (Billable ZAR, Matters Count, Clients Count, Trust Ledger Balance) are calculated exclusively from Firm A records.
-
----
-
-## 🧪 14. E2E-versus-Real-Staging Differences
-
-| Vector | E2E Mock Environment | Real Staging Environment |
-| :--- | :--- | :--- |
-| **Authentication** | Bypassed using mock cookies (`mock-authenticated = true`). | Authenticated dynamically through the Clerk API and redirect tokens. |
-| **Database Connection** | Uses the in-memory/mock resolver in `server.ts`. | Connects to the real staging Supabase PostgreSQL database via HTTPS. |
-| **Test Mode Code Path** | `NEXT_PUBLIC_TEST_MODE = true` triggers local mock paths. | Real actions run in standard production mode, throwing errors if session matches are missing. |
-
----
-
-## 📸 15. Evidence to Capture
-Maintain a secure folder of evidence showing:
-1. Console screenshot of redirected unauthorized `/dashboard` access.
-2. Server logs showing `Access denied` or scoping mismatch errors on cross-tenant requests.
-3. Database query showing clean sync of registered Clerk TEXT IDs in `firm_members`.
-
----
-
-## 🚦 16. Go/No-Go Decision Framework
-- **GO Decision**: All manual smoke tests and cross-tenant checks pass. No data leaks, no crash loops.
-- **NO-GO Decision**: 
-  - Any cross-tenant data leak occurs (Firm A can view or edit Firm B data).
-  - Clerk auth middleware fails to protect `/dashboard` or `/portal`.
-  - Database queries crash due to data type or casting mismatches.
-
----
-
-## ⛔ 17. Known Production Blockers
-- **Supabase RLS Policy Compatibility**: Database-side RLS policies are **not compatible** with Clerk TEXT user IDs (they currently crash when `auth.uid()` is executed). A separate production security sprint must be executed to refactor RLS policies before client-side direct access is approved.
-
----
-
-## 📣 18. Final Recommendation Language
-- **Recommendation**: The platform is **Conditionally Staging Ready — automated validation has passed, but live staging manual and cross-tenant security verification remains incomplete.** Production readiness remains blocked until the Clerk-compatible Supabase RLS strategy is designed, implemented, and penetration-tested.
-- **Required Workstream**: Database-side RLS is a separate production security sprint. Confidential legal data must remain behind server actions and server-side API routes. Direct client-side Supabase access is not approved for legal data yet. No database-level changes or policy rewrites (e.g. `get_auth_firm_id()` or `get_auth_role()`) are to be made during this staging verification phase.
+### Automated Tests
+- Run `npm run test:run` to execute Vitest unit/integration tests:
+  - Verify validation schemas reject invalid inputs.
+  - Assert that calling task, deadline, expense, and payment actions with mismatched firm scopes returns an access error (parameter tampering defense).
+  - Verify `closeMatter` gates block closure when unbilled hours/expenses or open tasks/deadlines exist.
+- Run `npm run test:db` to check local and remote RLS helper compliance.
+- Run `npm run test:e2e` to verify full front-to-back workflows under mock authentications.

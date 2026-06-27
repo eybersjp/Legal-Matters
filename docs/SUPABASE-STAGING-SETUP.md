@@ -126,7 +126,7 @@ WHERE schemaname = 'public';
 
 ### 4. Auth Redirect Loop
 * **Symptom**: Infinite redirections between `/login` and `/dashboard`.
-* **Fix**: Confirm that you are not setting `NEXT_PUBLIC_TEST_MODE=true` on staging, as this will conflict with session cookies. Also verify your staging URL is registered in **Clerk Dashboard → Sites → Application URLs**.
+* **Fix**: Confirm that you are not setting `E2E_TEST_MODE=true` on staging, as this will conflict with session cookies. Also verify your staging URL is registered in **Clerk Dashboard → Sites → Application URLs**.
 
 ### 5. Clerk Migration Not Applied (firm_members.id is still UUID)
 * **Symptom**: After registering, the dashboard is empty or server actions return errors about mismatched ID types.
